@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · Nice Pull</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#020307; --card:rgba(10,14,26,.92); --line:rgba(70,130,170,.28); --grid:rgba(135,148,168,.18);
+    --chalk:#e9eef5; --dim:#8794a8; --cyan:#12c4dc; --pink:#ff1f8e;
+    --miss:#5b6475; --t0:#93a0b5; --t1:#12c4dc; --t2:#22e08a; --t3:#ffc93a; --t4:#ff7a2a; --t5:#ff1f8e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--chalk);font-family:'Chakra Petch',system-ui,sans-serif}
+  body{background:radial-gradient(60% 30% at 10% 0%,rgba(18,196,220,.10) 0,transparent 70%),radial-gradient(50% 30% at 95% 4%,rgba(255,31,142,.08) 0,transparent 70%),var(--bg);min-height:100vh}
+  .wrap{max-width:1040px;margin:0 auto;padding:22px 16px 60px}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-family:Orbitron,sans-serif;font-weight:900;font-size:26px;letter-spacing:.04em}
+  h1 span{color:var(--pink)}
+  .meta{color:var(--dim);font-size:13px;margin-top:4px}
+  a{color:var(--cyan)}
+  button{font:inherit;cursor:pointer;background:transparent;color:var(--chalk);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px}
+  button:hover,button:focus-visible{border-color:var(--cyan);outline:none}
+  button.on{border-color:var(--cyan);color:var(--cyan)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;margin-bottom:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .kpi .v{font-family:Orbitron,sans-serif;font-weight:700;font-size:28px;line-height:1.1}
+  .kpi .l{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+  .kpi .s{color:var(--dim);font-size:12px;margin-top:6px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:760px){ .grid2{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;min-width:0}
+  .card h2{font-size:14px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .empty{color:var(--dim);font-size:14px;padding:10px 0}
+  svg text{fill:var(--dim);font-family:'Chakra Petch',sans-serif;font-size:11px}
+  .bars rect.hit{fill:transparent}
+  .tip{position:fixed;z-index:20;pointer-events:none;background:#0b1020;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;color:var(--chalk);white-space:nowrap;display:none}
+  .hbar{display:grid;grid-template-columns:110px 1fr 70px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+  .hbar .track{height:14px;position:relative}
+  .hbar .fill{height:100%;border-radius:0 4px 4px 0;min-width:2px}
+  .hbar .n{color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid rgba(70,130,170,.15);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .scroll{overflow-x:auto}
+  .prompts td:first-child{min-width:190px}
+  .prompts td:last-child{min-width:200px}
+  .chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin:2px 4px 2px 0;font-size:12px;white-space:nowrap}
+  .sport{color:var(--dim);font-size:12px}
+  .gate{max-width:420px;margin:12vh auto;text-align:center}
+  .gate p{color:var(--dim);margin:12px 0 18px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="empty">Loading…</p></div>
+<div class="tip" id="tip"></div>
+<script>
+const SB_URL = "https://ekbirqvffgoiqyjnwvej.supabase.co";
+const SB_KEY = "sb_publishable_ye0L2OnpCPV2FhlDsYnhuw_ErnlpfTi";   // publishable key: safe in the browser
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+const $ = id => document.getElementById(id);
+const esc = x => String(x == null ? "" : x).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => Number(n || 0).toLocaleString();
+const TIER_BY_PTS = {0:["No hit","--miss"],10:["Chalk","--t0"],25:["Box Score Guy","--t1"],30:["Box Score Guy","--t1"],40:["Role Player","--t2"],60:["Nice Pull","--t3"],80:["Deep Cut","--t4"],100:["Ur a Beast","--t5"]};
+let DATA = null, promptSort = "n";
+
+// ---------- tooltip ----------
+const tip = $("tip");
+function showTip(e, html){ tip.innerHTML = html; tip.style.display = "block"; moveTip(e); }
+function moveTip(e){ const x = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8); tip.style.left = x + "px"; tip.style.top = (e.clientY - tip.offsetHeight - 10) + "px"; }
+function hideTip(){ tip.style.display = "none"; }
+
+// ---------- day bar chart (one series, one hue) ----------
+function dayBars(rows, key, label, days = 30){
+  const today = new Date(); const out = [];
+  const byDay = Object.fromEntries(rows.map(r => [r.day, r]));
+  for(let i = days - 1; i >= 0; i--){
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const k = d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    out.push({ day: k, v: byDay[k] ? byDay[k][key] : 0, r: byDay[k] });
+  }
+  if(!out.some(o => o.v)) return `<p class="empty">Nothing yet.</p>`;
+  const W = 480, H = 150, L = 30, B = 22, T = 8, bw = (W - L) / out.length;
+  const max = Math.max(1, ...out.map(o => o.v)), nice = max <= 4 ? max : Math.ceil(max / 4) * 4;
+  const y = v => T + (H - T - B) * (1 - v / nice);
+  let s = `<svg class="bars" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)} per day, last ${days} days">`;
+  for(let g = 0; g <= 4; g++){ const v = nice * g / 4; if(nice <= 4 && v % 1) continue;
+    s += `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`; }
+  out.forEach((o, i) => {
+    const x = L + i * bw + 1, h = (H - B) - y(o.v), r = Math.min(4, h, (bw - 2) / 2);
+    if(o.v) s += `<path d="M${x} ${H - B}V${y(o.v) + r}q0 -${r} ${r} -${r}h${bw - 2 - 2 * r}q${r} 0 ${r} ${r}V${H - B}Z" fill="var(--cyan)"/>`;
+    if(i % 7 === (out.length - 1) % 7) s += `<text x="${i === out.length - 1 ? W : x + (bw - 2) / 2}" y="${H - 6}" text-anchor="${i === out.length - 1 ? "end" : "middle"}">${o.day.slice(5).replace("-", "/")}</text>`;
+    const extra = key === "plays" && o.r ? ` · ${fmt(o.r.players)} players` : "";
+    s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T}" data-tip="${esc(`<b>${o.day.slice(5).replace("-", "/")}</b> · ${fmt(o.v)} ${label.toLowerCase()}${extra}`)}"/>`;
+  });
+  s += `<line x1="${L}" x2="${W}" y1="${H - B}" y2="${H - B}" stroke="var(--dim)" stroke-width="1"/></svg>`;
+  return s;
+}
+
+// ---------- page ----------
+function kpi(v, l, s){ return `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div>${s ? `<div class="s">${s}</div>` : ""}</div>`; }
+function render(){
+  const d = DATA;
+  const at = new Date(d.generated_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const answers = d.answer_pts.reduce((a, r) => a + r.n, 0);
+  const merged = {};
+  d.answer_pts.forEach(r => { const t = TIER_BY_PTS[r.pts] || [`${r.pts} pts`, "--dim"]; (merged[t[0]] = merged[t[0]] || { n: 0, c: t[1], pts: r.pts }).n += r.n; });
+  const tierRows = Object.entries(merged).sort((a, b) => (a[1].pts || 999) - (b[1].pts || 999));   // Chalk → Ur a Beast, then no hit
+  const tmax = Math.max(1, ...tierRows.map(([, v]) => v.n));
+  const titleMax = Math.max(1, ...d.titles.map(t => t.n));
+  const plays = d.plays || 0;
+
+  let h = `<header><div><h1>NICE <span>PULL</span> · ADMIN</h1><div class="meta">Updated ${esc(at)} · visible only to admin accounts</div></div>
+    <div><button id="refresh">Refresh</button> <a href="/" style="margin-left:10px;font-size:13px">Back to the game</a></div></header>`;
+
+  h += `<div class="kpis">
+    ${kpi(fmt(d.signups), "Sign-ups", `+${fmt(d.signups_24h)} today · +${fmt(d.signups_7d)} this week`)}
+    ${kpi(fmt(d.players), "Have played", `${d.signups ? Math.round(100 * d.players / d.signups) : 0}% of sign-ups`)}
+    ${kpi(fmt(d.active_24h), "Played last 24h")}
+    ${kpi(fmt(d.returning), "Came back", "played 2+ games")}
+    ${kpi(fmt(plays), "Games saved", d.players ? `${(plays / d.players).toFixed(1)} per player` : "")}
+    ${kpi(fmt(d.usernames), "Usernames", `${fmt(d.on_global)} on the global board`)}
+    ${kpi(fmt(d.leagues), "Leagues", `${fmt(d.league_members)} memberships`)}
+  </div>`;
+
+  h += `<div class="grid2">
+    <div class="card"><h2>Games played per day <span style="text-transform:none;letter-spacing:0">last 30 days</span></h2>${dayBars(d.play_days, "plays", "Games played")}</div>
+    <div class="card"><h2>Sign-ups per day <span style="text-transform:none;letter-spacing:0">last 30 days</span></h2>${dayBars(d.signup_days, "n", "Sign-ups")}</div>
+  </div>`;
+
+  h += `<div class="grid2">
+    <div class="card"><h2>How answers land <span style="text-transform:none;letter-spacing:0">${fmt(answers)} answers</span></h2>
+      ${tierRows.length ? tierRows.map(([name, v]) => `<div class="hbar"><span>${esc(name)}</span><div class="track"><div class="fill" style="width:${100 * v.n / tmax}%;background:var(${v.c})"></div></div><span class="n">${fmt(v.n)} · ${Math.round(100 * v.n / answers)}%</span></div>`).join("") : `<p class="empty">No answers yet.</p>`}
+    </div>
+    <div class="card"><h2>Titles earned</h2>
+      ${d.titles.length ? d.titles.map(t => `<div class="hbar" style="grid-template-columns:170px 1fr 70px"><span>${esc(t.rank)}</span><div class="track"><div class="fill" style="width:${100 * t.n / titleMax}%;background:var(--cyan)"></div></div><span class="n">${fmt(t.n)} · ${Math.round(100 * t.n / plays)}%</span></div>`).join("") : `<p class="empty">No games yet.</p>`}
+    </div>
+  </div>`;
+
+  h += `<div class="card"><h2>Each game <span style="text-transform:none;letter-spacing:0">game 0 = launch-day bonus</span></h2>${d.games.length ? `<div class="scroll"><table>
+    <thead><tr><th>Game</th><th class="num">Players</th><th class="num">Average</th><th class="num">Median</th><th class="num">Best</th><th class="num">Worst</th></tr></thead><tbody>
+    ${d.games.slice().reverse().map(g => `<tr><td>${g.game === 0 ? "Bonus" : "#" + g.game}</td><td class="num">${fmt(g.players)}</td><td class="num">${fmt(g.avg)}</td><td class="num">${fmt(g.median)}</td><td class="num">${fmt(g.best)}</td><td class="num">${fmt(g.worst)}</td></tr>`).join("")}
+    </tbody></table></div>` : `<p class="empty">No games yet.</p>`}</div>`;
+
+  const sorts = { n: ["Most played", (a, b) => b.n - a.n], hard: ["Hardest", (a, b) => a.hit - b.hit || a.avg_pts - b.avg_pts], easy: ["Easiest", (a, b) => b.hit - a.hit || b.avg_pts - a.avg_pts], beast: ["Most Ur a Beast", (a, b) => b.beast - a.beast] };
+  const pr = d.prompts.slice().sort(sorts[promptSort][1]);
+  h += `<div class="card"><h2>Prompts <span>${Object.entries(sorts).map(([k, [l]]) => `<button data-sort="${k}" class="${k === promptSort ? "on" : ""}">${l}</button>`).join(" ")}</span></h2>
+    ${pr.length ? `<div class="scroll"><table class="prompts"><thead><tr><th>Prompt</th><th class="num">Game</th><th class="num">Answers</th><th class="num">Hit %</th><th class="num">Avg pts</th><th class="num">Ur a Beast</th><th class="num">Timeouts</th><th>Most named</th></tr></thead><tbody>
+    ${pr.map(p => `<tr><td>${esc(p.q)} <span class="sport">${esc(p.s || "")}</span></td><td class="num">${p.game === 0 ? "Bonus" : "#" + p.game}</td><td class="num">${fmt(p.n)}</td><td class="num">${p.hit == null ? "–" : p.hit + "%"}</td><td class="num">${p.avg_pts}</td><td class="num">${fmt(p.beast)}</td><td class="num">${fmt(p.timeouts)}</td>
+      <td>${(p.top || []).map(t => `<span class="chip">${esc(t.name)} ×${fmt(t.n)} · ${t.pts}</span>`).join("") || `<span class="sport">–</span>`}</td></tr>`).join("")}
+    </tbody></table></div>` : `<p class="empty">No answers yet.</p>`}</div>`;
+
+  h += `<div class="card"><h2>Visitors</h2><p class="empty" style="padding:0">The site has no tracking script, so visitor counts live in Cloudflare: open <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">dash.cloudflare.com</a> → nicepull.io → Analytics.</p></div>`;
+
+  $("app").innerHTML = h;
+  $("refresh").onclick = load;
+  document.querySelectorAll("[data-sort]").forEach(b => b.onclick = () => { promptSort = b.dataset.sort; render(); });
+  document.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("pointerenter", e => showTip(e, el.dataset.tip));
+    el.addEventListener("pointermove", moveTip);
+    el.addEventListener("pointerleave", hideTip);
+  });
+}
+
+function gate(title, msg, btn){
+  $("app").innerHTML = `<div class="gate card"><h1>NICE <span>PULL</span></h1><h2 style="margin-top:16px;font-size:18px">${title}</h2><p>${msg}</p>${btn || ""}</div>`;
+}
+async function load(){
+  const { data: s } = await sb.auth.getSession();
+  if(!s.session){ gate("Admins only", "Sign in on the game with your admin Google account, then come back to this page.", `<a href="/"><button>Go to Nice Pull</button></a>`); return; }
+  const { data, error } = await sb.rpc("admin_stats");
+  if(error){
+    if(/not allowed|permission/i.test(error.message)) gate("Admins only", "This account isn't an admin.", `<a href="/"><button>Back to the game</button></a>`);
+    else gate("Couldn't load", esc(error.message), `<button onclick="load()">Try again</button>`);
+    return;
+  }
+  DATA = data; render();
+}
+load();
+</script>
+</body>
+</html>
