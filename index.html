@@ -334,6 +334,35 @@
   #npTip{position:fixed;z-index:50;pointer-events:none;background:rgba(5,7,14,.96);border:1px solid rgba(95,227,242,.5);border-radius:8px;padding:7px 10px;font-size:12.5px;color:#c9d4e3;box-shadow:0 6px 20px rgba(0,0,0,.6);max-width:220px}
   #npTip b{display:block;color:#fff;font-size:15px}
   .empty{color:#c9d4e3;font-size:14px;margin-top:8px}
+  /* ---------- scoreboard, leagues, profile ---------- */
+  #boards .card{margin-top:14px}
+  .seg{display:flex;gap:6px;overflow-x:auto;margin-top:14px;padding-bottom:2px;scrollbar-width:none}
+  .seg::-webkit-scrollbar{display:none}
+  .segb{flex:0 0 auto;background:rgba(2,4,9,.7);border:1px solid rgba(70,130,170,.35);color:#c9d4e3;border-radius:999px;padding:8px 14px;font:600 13px 'Chakra Petch',sans-serif;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+  .segb.on{background:var(--cyan);border-color:var(--cyan);color:#05121a}
+  .seg.when .segb{font-size:12px;padding:6px 12px}
+  .seg.when .segb.on{background:transparent;color:#fff;border-color:#fff}
+  .btable td small{color:var(--dim);font-size:11px}
+  .btable tr.me td{background:rgba(255,31,142,.14);color:#fff;font-weight:700}
+  .btable tr.gap td{text-align:center;color:var(--dim);padding:2px}
+  .btable td.pos{width:34px;color:var(--dim)}
+  .btable td.nm{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btable td.tt{font-size:12px;color:#c9d4e3}
+  .lg-name{font-family:'Orbitron',sans-serif;font-weight:700;font-size:20px;color:#fff;margin-top:6px;word-break:break-word}
+  .invite-row{display:flex;gap:8px;margin-top:12px}
+  .invite-row input{flex:1;min-width:0;padding:10px 12px;font-size:13px;border-radius:10px}
+  .invite-row .btn{width:auto;margin:0;padding:10px 14px;font-size:14px;white-space:nowrap}
+  .btn.small{width:auto;margin:10px 0 0;padding:9px 14px;font-size:13px}
+  .btn.danger{color:#f2a191;border-color:rgba(226,85,63,.45)}
+  #inviteCard .card{margin:0 0 16px;border-color:rgba(18,196,220,.6);position:relative}
+  #inviteCard .x{position:absolute;top:10px;right:10px;background:transparent;color:var(--dim);font-size:16px;padding:4px 8px}
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px}
+  .modal.hide{display:none}
+  .modal .card{width:100%;max-width:440px;background:#070a13}
+  .modal input#npUser{margin-top:12px}
+  .check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px;color:#e8ecf4;cursor:pointer;line-height:1.35}
+  .check input{width:18px;height:18px;padding:0;margin-top:2px;flex:0 0 auto;accent-color:var(--cyan)}
+  .check small{display:block;color:var(--dim);font-size:12px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -347,6 +376,7 @@
     <h1 class="logo"><b>Nice</b><br><span>Pull</span></h1>
     <div class="label" style="text-align:center;font-size:12px;white-space:nowrap;margin-top:56px">🏈 🏀 🏟️ ⚾ ⛳ 🏅</div>
     <p class="tag">Seven prompts. One answer each. The deeper the pull, the bigger the points.</p>
+    <div id="inviteCard"></div>
     <div class="card">
       <div class="label">How it works</div>
       <ul class="rules">
@@ -408,6 +438,14 @@
     <div id="statsBody"></div>
   </section>
 
+  <!-- SCOREBOARD -->
+  <section id="boards" class="hide">
+    <div class="top"><button class="btn ghost" id="boardsBack" style="width:auto;margin:0;padding:8px 14px">‹ Back</button><span>Scoreboard</span></div>
+    <div class="seg" id="bdTabs" role="tablist" aria-label="Scoreboards"></div>
+    <div class="seg when" id="bdWhen" aria-label="Which game"></div>
+    <div id="bdBody"></div>
+  </section>
+
   <!-- RESULTS -->
   <section id="results" class="hide">
     <h1 class="logo" style="font-size:24px;margin-top:6px"><b>Nice</b><br><span>Pull</span></h1>
@@ -421,10 +459,23 @@
     <textarea id="shareText" rows="5" class="hide" readonly></textarea>
     <button class="btn ghost hide" id="yResBtn"></button>
     <p class="hint hide" id="yResMsg" style="font-size:13px">Yesterday's game is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button></p>
+    <button class="btn ghost" id="boardsResBtn">Scoreboard 🏆</button>
     <button class="btn ghost" id="statsResBtn">Your stats 📊</button>
         <button class="btn ghost" id="againBtn">Back to menu</button>
   </section>
 
+</div>
+
+<div id="npModal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="npModalT">
+  <div class="card">
+    <div class="label" id="npModalT">Pick a username</div>
+    <p class="sub" id="npModalSub" style="margin-top:8px">It's the name on the scoreboards and in your leagues. 3 to 20 characters: letters, numbers and _.</p>
+    <input id="npUser" maxlength="20" placeholder="e.g. SchwabFan23" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div class="missmsg" id="npUserMsg"></div>
+    <label class="check"><input type="checkbox" id="npGlobal" checked><span>Show me on the global scoreboard<small>Anyone can see the global scoreboard. Friends in your leagues see your scores either way.</small></span></label>
+    <button class="btn" id="npUserSave">Save</button>
+    <button class="btn ghost" id="npUserCancel" style="margin-top:8px">Not now</button>
+  </div>
 </div>
 
 <script type="text/plain" id="gamecode">
@@ -607,7 +658,7 @@ const isSignedIn = () => !!window.NP_USER;
 // ---------- UI ----------
 let round = [], gameLabel = "", gameNo = 0, idx = 0, results = [], timerId = null, endsAt = 0, locked = false;
 const $ = id => document.getElementById(id);
-const show = id => ["start","archive","play","reveal","results","stats"].forEach(s => $(s).classList.toggle("hide", s!==id));
+const show = id => ["start","archive","play","reveal","results","stats","boards"].forEach(s => $(s).classList.toggle("hide", s!==id));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 $("ladder").innerHTML = TIERS.slice().reverse().concat([BUM]).map(t =>
@@ -653,6 +704,8 @@ function renderStart(){
   if($("yBtn")) $("yBtn").onclick = () => playYesterday("yMsg");
   $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="statsBtn" style="margin-top:6px">Your stats 📊${isSignedIn() ? "" : " 🔒"}</button>`);
   $("statsBtn").onclick = () => { if(typeof openStats === "function") openStats(); };
+  $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="boardsBtn" style="margin-top:6px">Scoreboard 🏆</button>`);
+  $("boardsBtn").onclick = () => openBoards();
   clearInterval(cdTimer); tick(); cdTimer = setInterval(tick, 30000);
 }
 function showSaved(n){
@@ -803,6 +856,7 @@ $("shareBtn").onclick = async () => {
 };
 $("againBtn").onclick = () => { renderStart(); show("start"); };
 $("statsResBtn").onclick = () => openStats();
+$("boardsResBtn").onclick = () => openBoards();
 
 // ---------- accounts: save games to the player's account ----------
 const sb = () => (typeof npSB !== "undefined" && npSB) ? npSB : null;
@@ -810,7 +864,8 @@ const recToRow = (n, rec) => ({ user_id: window.NP_USER.id, game_no: +n, total: 
   results: rec.results || [], played_at: new Date(rec.at || Date.now()).toISOString() });
 async function cloudPush(n, rec){
   if(!isSignedIn() || !sb() || !rec || !rec.results) return;
-  try { await sb().from("plays").upsert([recToRow(n, rec)], { onConflict: "user_id,game_no", ignoreDuplicates: true }); } catch(e) {}
+  window.NP_PUSHING = (async () => { try { await sb().from("plays").upsert([recToRow(n, rec)], { onConflict: "user_id,game_no", ignoreDuplicates: true }); } catch(e) {} })();
+  return window.NP_PUSHING;
 }
 let syncing = null;
 async function cloudSync(){
@@ -831,7 +886,8 @@ async function cloudSync(){
       }
       if(changed){ try { localStorage.setItem(STORE, JSON.stringify(local)); } catch(e) {} }
       const missing = Object.keys(local).filter(n => !have.has(String(n)) && local[n] && local[n].results).map(n => recToRow(n, local[n]));
-      if(missing.length) await sb().from("plays").upsert(missing, { onConflict: "user_id,game_no", ignoreDuplicates: true });
+      // one row at a time, so a single bad record can't block the rest
+      for(const row of missing){ try { await sb().from("plays").upsert([row], { onConflict: "user_id,game_no", ignoreDuplicates: true }); } catch(e) {} }
       if(!$("start").classList.contains("hide")) renderStart();
       if(!$("stats").classList.contains("hide")) renderStats();
     } catch(e) {} finally { syncing = null; }
@@ -1067,6 +1123,152 @@ window.addEventListener("scroll", hideTip, { passive: true });
 if(isSignedIn()) cloudSync();
 if(NP_DEMO) setTimeout(openStats, 0);
 
+// ---------- scoreboard + leagues ----------
+let bdScope = "global", bdWhen = "today", bdLeagues = [], bdToken = 0;
+async function npRpc(fn, args){ const { data, error } = await sb().rpc(fn, args || {}); if(error) throw error; return data || []; }
+const hasProfile = () => isSignedIn() && !!window.NP_PROFILE;
+const inviteUrl = lg => `${location.origin}/?join=${lg.code}`;
+async function loadLeagues(){
+  if(!hasProfile() || !sb()){ bdLeagues = []; return; }
+  try { bdLeagues = await npRpc("my_leagues"); } catch(e) { bdLeagues = bdLeagues || []; }
+}
+async function openBoards(scope){
+  if(scope) bdScope = scope;
+  hideTip(); show("boards"); window.scrollTo(0, 0);
+  $("bdBody").innerHTML = `<p class="empty">Loading…</p>`;
+  if(window.NP_PUSHING){ try { await window.NP_PUSHING; } catch(e) {} }
+  await loadLeagues();
+  if(bdScope !== "global" && bdScope !== "new" && !bdLeagues.some(l => l.id === bdScope)) bdScope = "global";
+  renderBoards();
+}
+window.openBoards = openBoards;
+window.onNpProfile = () => { if(!$("boards").classList.contains("hide")) openBoards(); };
+const minGlobalGames = () => Math.min(5, Math.max(1, Math.ceil(todayGame() / 3)));
+
+function renderBoardTabs(){
+  const tabs = [{ id: "global", label: "🌎 Global" }]
+    .concat(bdLeagues.map(l => ({ id: l.id, label: l.name })))
+    .concat(isSignedIn() ? [{ id: "new", label: "+ New league" }] : []);
+  $("bdTabs").innerHTML = tabs.map(t => `<button class="segb${t.id === bdScope ? " on" : ""}" role="tab" aria-selected="${t.id === bdScope}" data-id="${esc(t.id)}">${esc(t.label)}</button>`).join("");
+  $("bdTabs").querySelectorAll("button").forEach(b => b.onclick = () => { bdScope = b.dataset.id; renderBoards(); });
+  const t = todayGame(), y = t - 1;
+  if(bdWhen === "yday" && y < 1) bdWhen = "today";
+  const whens = [{ id: "today", label: `Today · #${t}` }].concat(y >= 1 ? [{ id: "yday", label: `Yesterday · #${y}` }] : []).concat([{ id: "all", label: "All-time" }]);
+  $("bdWhen").innerHTML = bdScope === "new" ? "" : whens.map(w => `<button class="segb${w.id === bdWhen ? " on" : ""}" data-id="${w.id}">${w.label}</button>`).join("");
+  $("bdWhen").querySelectorAll("button").forEach(b => b.onclick = () => { bdWhen = b.dataset.id; renderBoards(); });
+}
+
+function dayTable(rows, lg, n){
+  if(!rows.length) return `<p class="empty">No scores on Game #${n} yet.${lg ? "" : " Be the first."}</p>`;
+  let out = "", prev = 0;
+  for(const r of rows){
+    if(!lg && r.pos > prev + 1 && prev >= 100) out += `<tr class="gap"><td colspan="4">⋯</td></tr>`;
+    if(r.pos) prev = r.pos;
+    out += `<tr class="${r.is_me ? "me" : ""}"><td class="pos">${r.pos || "–"}</td><td class="nm">${esc(r.username)}${r.is_me ? " <small>you</small>" : ""}</td>` +
+      `<td class="r">${r.total == null ? "—" : r.total}</td><td class="tt">${r.total == null ? "<small>Hasn't played</small>" : esc(r.rank || rankFor(r.total))}</td></tr>`;
+  }
+  return `<table class="gtable btable"><thead><tr><th>#</th><th>Player</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>${out}</tbody></table>`;
+}
+function allTable(rows, lg){
+  if(!rows.length) return `<p class="empty">No one qualifies yet.</p>`;
+  let out = "", prev = 0;
+  for(const r of rows){
+    if(!lg && r.pos > prev + 1 && prev >= 100) out += `<tr class="gap"><td colspan="5">⋯</td></tr>`;
+    if(r.pos) prev = r.pos;
+    out += `<tr class="${r.is_me ? "me" : ""}"><td class="pos">${r.pos || "–"}</td><td class="nm">${esc(r.username)}${r.is_me ? " <small>you</small>" : ""}</td>` +
+      `<td class="r">${r.games ? Math.round(+r.avg) : "—"}</td><td class="r">${r.games}</td><td class="r">${r.best == null ? "—" : r.best}</td></tr>`;
+  }
+  return `<table class="gtable btable"><thead><tr><th>#</th><th>Player</th><th class="r">Avg</th><th class="r">Games</th><th class="r">Best</th></tr></thead><tbody>${out}</tbody></table>`;
+}
+function leagueHead(lg){
+  return `<div class="card"><div class="label">Your league</div><div class="lg-name">${esc(lg.name)}</div>` +
+    `<p class="sub" style="margin-top:4px">${lg.members} member${lg.members === 1 ? "" : "s"}. Send the link to friends. When they open it and sign in, they join.</p>` +
+    `<div class="invite-row"><input id="lgLink" readonly value="${esc(inviteUrl(lg))}" aria-label="Invite link"><button class="btn" id="lgShare">${navigator.share ? "Share" : "Copy link"}</button></div></div>`;
+}
+function profileCard(){
+  if(!isSignedIn()) return `<div class="card"><div class="label">Get on the board</div><p class="empty">Sign in free with Google, pick a username, and your scores land here. You can start private leagues with friends, too.</p><button class="btn" onclick="npSignIn()">Sign in with Google</button></div>`;
+  if(!window.NP_PROFILE) return `<div class="card"><div class="label">Pick a username</div><p class="empty">You need a username to show up on scoreboards and start or join leagues.</p><button class="btn" onclick="npOpenProfile('setup')">Pick a username</button></div>`;
+  const p = window.NP_PROFILE;
+  return `<div class="card"><div class="label">Your profile</div><p class="empty"><b style="color:#fff">${esc(p.username)}</b> · ${p.on_global ? "On the global scoreboard" : "Hidden from the global scoreboard"}</p><button class="btn ghost small" onclick="npOpenProfile('edit')">Edit profile</button></div>`;
+}
+function newLeagueView(){
+  if(!window.NP_PROFILE) return profileCard();
+  return `<div class="card"><div class="label">Start a league</div><p class="sub" style="margin-top:8px">A private scoreboard for you and your friends. You'll get a link to send them.</p>` +
+    `<input id="lgName" maxlength="32" placeholder="League name, e.g. The Group Chat" autocomplete="off" style="margin-top:12px"><div class="missmsg" id="lgMsg"></div>` +
+    `<button class="btn" id="lgCreate">Create league</button></div>` +
+    `<p class="hint" style="font-size:13px">Got an invite? Just open the link your friend sent.</p>`;
+}
+const LG_ERR = { too_many_leagues: "You can run up to 10 leagues.", no_username: "Pick a username first." };
+async function createLeague(){
+  const name = $("lgName").value.trim();
+  if(name.length < 2){ $("lgMsg").textContent = "Give it a name (2 to 32 characters)."; return; }
+  $("lgCreate").disabled = true;
+  try {
+    const r = (await npRpc("create_league", { p_name: name }))[0];
+    await loadLeagues(); bdScope = r.id; bdWhen = "today"; renderBoards();
+  } catch(e) {
+    $("lgMsg").textContent = LG_ERR[(e.message || "").trim()] || "Couldn't create the league. Try again.";
+    $("lgCreate").disabled = false;
+  }
+}
+async function shareLeague(lg){
+  const url = inviteUrl(lg), text = `Join my Nice Pull league, ${lg.name}:`;
+  if(navigator.share){ try { await navigator.share({ title: "Nice Pull", text, url }); return; } catch(e) { if(e && e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(`${text} ${url}`); $("lgShare").textContent = "Copied ✓"; }
+  catch(e) { $("lgLink").select(); $("lgShare").textContent = "Copy it above"; }
+}
+
+async function renderBoards(){
+  renderBoardTabs();
+  const body = $("bdBody"), token = ++bdToken;
+  if(bdScope === "new"){
+    body.innerHTML = newLeagueView();
+    if($("lgCreate")){ $("lgCreate").onclick = createLeague; $("lgName").onkeydown = e => { if(e.key === "Enter") createLeague(); }; $("lgName").focus(); }
+    return;
+  }
+  const lg = bdScope === "global" ? null : bdLeagues.find(l => l.id === bdScope);
+  const t = todayGame(), n = bdWhen === "yday" ? t - 1 : t;
+  body.innerHTML = (lg ? leagueHead(lg) : "") + `<div class="card"><p class="empty">Loading…</p></div>`;
+  let rows;
+  try {
+    rows = !sb() ? [] : bdWhen === "all"
+      ? await npRpc("board_all", { p_league: lg ? lg.id : null, p_min: lg ? 1 : minGlobalGames() })
+      : await npRpc("board_day", { p_league: lg ? lg.id : null, p_game: n });
+  } catch(e) {
+    if(token !== bdToken) return;
+    body.innerHTML = (lg ? leagueHead(lg) : "") + `<div class="card"><p class="empty">Couldn't load the scoreboard. Try again in a minute.</p></div>`;
+    return;
+  }
+  if(token !== bdToken) return;
+  const mine = loadScores();
+  const title = bdWhen === "all"
+    ? `<div class="label">All-time</div><p class="hint" style="margin-top:6px;font-size:12px;text-align:left">Ranked by average score${lg ? "" : `. ${minGlobalGames()}+ game${minGlobalGames() === 1 ? "" : "s"} to qualify`}.</p>`
+    : `<div class="label">Game #${n} · ${fmtDate(gameDate(n), { weekday: "short", month: "short", day: "numeric" })}</div>`;
+  let note = "";
+  if(bdWhen !== "all" && !mine[n]) note = n === t
+    ? `<button class="btn small" id="bdPlay">Play today's game</button>`
+    : `<p class="hint" style="text-align:left;font-size:12px">You haven't played Game #${n}.</p>`;
+  else if(!lg && hasProfile() && !window.NP_PROFILE.on_global) note = `<p class="hint" style="text-align:left;font-size:12px">You're hidden from the global scoreboard. Change it under Your profile.</p>`;
+  body.innerHTML = (lg ? leagueHead(lg) : "") +
+    `<div class="card">${title}${bdWhen === "all" ? allTable(rows, lg) : dayTable(rows, lg, n)}${note}</div>` +
+    profileCard() +
+    (lg ? `<button class="btn ghost danger" id="lgLeave">Leave league</button>` : "");
+  if($("bdPlay")) $("bdPlay").onclick = () => { renderStart(); show("start"); window.scrollTo(0, 0); };
+  if(lg){
+    $("lgShare").onclick = () => shareLeague(lg);
+    $("lgLink").onclick = () => $("lgLink").select();
+    let armed = false;
+    $("lgLeave").onclick = async () => {
+      if(!armed){ armed = true; $("lgLeave").textContent = "Tap again to leave"; setTimeout(() => { armed = false; if($("lgLeave")) $("lgLeave").textContent = "Leave league"; }, 4000); return; }
+      $("lgLeave").disabled = true;
+      try { await npRpc("leave_league", { p_id: lg.id }); } catch(e) {}
+      bdScope = "global"; await loadLeagues(); renderBoards();
+    };
+  }
+}
+$("boardsBack").onclick = () => { renderStart(); show("start"); window.scrollTo(0, 0); };
+if(window.NP_OPEN_LEAGUE){ const id = window.NP_OPEN_LEAGUE; window.NP_OPEN_LEAGUE = null; openBoards(id); }
+
 </script>
 <script>
 // ---------- accounts (Supabase + Google) ----------
@@ -1079,21 +1281,145 @@ function npSignIn(){
   npSB.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + "/" } });
 }
 async function npSignOut(){ if(npSB) await npSB.auth.signOut(); }
+const npEsc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const npEl = id => document.getElementById(id);
+window.NP_PROFILE = null;
 function npRenderAcct(){
-  const el = document.getElementById("acct"); if(!el) return;
-  const u = window.NP_USER;
+  const el = npEl("acct"); if(!el) return;
+  const u = window.NP_USER, p = window.NP_PROFILE;
   el.innerHTML = u
-    ? `<span class="who">${(u.email||"Signed in").replace(/[&<>"]/g,"")}</span><button class="btn ghost" onclick="npSignOut()">Sign out</button>`
+    ? `<span class="who">${npEsc(p ? p.username : (u.email || "Signed in"))}</span><button class="btn ghost" onclick="npSignOut()">Sign out</button>`
     : `<button class="btn ghost" onclick="npSignIn()">Sign in with Google</button>`;
+}
+
+// ---------- username ----------
+const NP_NAME_RE = /^[A-Za-z0-9_]{3,20}$/;
+const NP_BAD = /(nicepull|admin|support|moderator|official|fuck|shit|cunt|nigg|fag|retard|whore|slut|bitch|pussy|nazi|hitler|kike|chink|tranny)/;
+async function npLoadProfile(){
+  window.NP_PROFILE = null;
+  if(!npSB || !window.NP_USER) return null;
+  try { const { data } = await npSB.from("profiles").select("username,on_global").eq("user_id", window.NP_USER.id).maybeSingle(); window.NP_PROFILE = data || null; } catch(e) {}
+  return window.NP_PROFILE;
+}
+let npModalMode = "setup";
+function npOpenProfile(mode){
+  if(!window.NP_USER){ npSignIn(); return; }
+  npModalMode = mode || "setup";
+  const p = window.NP_PROFILE, inv = npInvite && npInvite.info && npPendingJoin() ? npInvite.info : null;
+  npEl("npModalT").textContent = p ? "Your profile" : "Pick a username";
+  npEl("npModalSub").textContent = (inv && !p ? `Pick a username to join ${inv.name}. ` : "") +
+    "It's the name on the scoreboards and in your leagues. 3 to 20 characters: letters, numbers and _.";
+  npEl("npUser").value = p ? p.username : "";
+  npEl("npGlobal").checked = p ? !!p.on_global : true;
+  npEl("npUserMsg").textContent = "";
+  npEl("npUserSave").textContent = inv && !p ? `Save and join ${inv.name}` : "Save";
+  npEl("npUserSave").disabled = false;
+  npEl("npUserCancel").textContent = p ? "Cancel" : "Not now";
+  npEl("npModal").classList.remove("hide");
+  setTimeout(() => npEl("npUser").focus(), 50);
+}
+function npCloseProfile(){ npEl("npModal").classList.add("hide"); }
+async function npSaveProfile(){
+  const name = npEl("npUser").value.trim(), onGlobal = npEl("npGlobal").checked, msg = t => { npEl("npUserMsg").textContent = t; };
+  if(!NP_NAME_RE.test(name)) return msg("3 to 20 characters: letters, numbers and _ only.");
+  if(NP_BAD.test(name.toLowerCase())) return msg("Pick a different name.");
+  npEl("npUserSave").disabled = true;
+  const had = !!window.NP_PROFILE;
+  let error = null;
+  try {
+    ({ error } = had
+      ? await npSB.from("profiles").update({ username: name, on_global: onGlobal }).eq("user_id", window.NP_USER.id)
+      : await npSB.from("profiles").insert({ username: name, on_global: onGlobal }));
+  } catch(e) { error = e; }
+  npEl("npUserSave").disabled = false;
+  if(error){
+    const m = String(error.message || "");
+    return msg(error.code === "23505" || /duplicate/.test(m) ? "That name's taken. Try another." : /blocked/.test(m) ? "Pick a different name." : "Couldn't save. Try again.");
+  }
+  window.NP_PROFILE = { username: name, on_global: onGlobal };
+  npCloseProfile(); npRenderAcct();
+  if(!had && npPendingJoin()) { await npJoinPending(); return; }
+  npRenderInvite();
+  if(typeof window.onNpProfile === "function") window.onNpProfile();
+}
+npEl("npUserSave").onclick = npSaveProfile;
+npEl("npUser").onkeydown = e => { if(e.key === "Enter") npSaveProfile(); };
+npEl("npUserCancel").onclick = () => { if(!window.NP_PROFILE){ try { localStorage.setItem("np_name_later", Date.now()); } catch(e) {} } npCloseProfile(); };
+npEl("npModal").onclick = e => { if(e.target.id === "npModal") npCloseProfile(); };
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !npEl("npModal").classList.contains("hide")) npCloseProfile(); });
+
+// ---------- league invites: nicepull.io/?join=CODE ----------
+const NP_JOIN = "np_join";
+let npInvite = null;
+(() => {
+  const q = new URLSearchParams(location.search), code = (q.get("join") || "").trim().toLowerCase();
+  if(code && /^[a-z0-9]{6,20}$/.test(code)){ try { localStorage.setItem(NP_JOIN, code); } catch(e) {} }
+  if(q.has("join")){ q.delete("join"); const qs = q.toString(); history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash); }
+})();
+const npPendingJoin = () => { try { return localStorage.getItem(NP_JOIN); } catch(e) { return null; } };
+function npDismissInvite(){ try { localStorage.removeItem(NP_JOIN); } catch(e) {} npInvite = null; npRenderInvite(); }
+async function npRenderInvite(){
+  const el = npEl("inviteCard"), code = npPendingJoin();
+  if(!el) return;
+  if(!code || !npSB){ el.innerHTML = ""; return; }
+  if(!npInvite || npInvite.code !== code){
+    try { const { data, error } = await npSB.rpc("league_preview", { p_code: code }); npInvite = { code, info: !error && data && data[0] ? data[0] : null, failed: !!error }; }
+    catch(e) { npInvite = { code, info: null, failed: true }; }
+  }
+  if(!npInvite.info){
+    if(npInvite.failed){ el.innerHTML = ""; return; }
+    try { localStorage.removeItem(NP_JOIN); } catch(e) {}
+    el.innerHTML = `<div class="card"><button class="x" onclick="this.closest('.card').remove()" aria-label="Dismiss">✕</button><div class="label">Invite link</div><p class="empty">That league link doesn't work anymore. Ask your friend for a new one.</p></div>`;
+    return;
+  }
+  const { name, members } = npInvite.info;
+  const btn = !window.NP_USER ? `<button class="btn" onclick="npSignIn()">Sign in with Google to join</button>`
+    : `<button class="btn" id="npJoinBtn" onclick="npJoinPending()">Join ${npEsc(name)}</button>`;
+  el.innerHTML = `<div class="card"><button class="x" onclick="npDismissInvite()" aria-label="Dismiss invite">✕</button><div class="label">You're invited</div>` +
+    `<div class="lg-name">${npEsc(name)}</div><p class="sub" style="margin-top:4px">A private Nice Pull league · ${members} member${members === 1 ? "" : "s"}. Play the daily game and see where you stack up.</p>${btn}</div>`;
+}
+async function npJoinPending(){
+  const code = npPendingJoin();
+  if(!code) return;
+  if(!window.NP_USER){ npSignIn(); return; }
+  if(!window.NP_PROFILE){ npOpenProfile("setup"); return; }
+  if(npEl("npJoinBtn")) npEl("npJoinBtn").disabled = true;
+  try {
+    const { data, error } = await npSB.rpc("join_league", { p_code: code });
+    if(error) throw error;
+    try { localStorage.removeItem(NP_JOIN); } catch(e) {}
+    npInvite = null; npRenderInvite();
+    const id = data && data[0] && data[0].id;
+    if(typeof window.openBoards === "function") window.openBoards(id); else window.NP_OPEN_LEAGUE = id;
+  } catch(e) {
+    const m = String((e && e.message) || "");
+    if(/league_not_found/.test(m)){ npInvite = { code, info: null }; npRenderInvite(); return; }
+    if(npEl("npJoinBtn")){ npEl("npJoinBtn").disabled = false; npEl("npJoinBtn").textContent = /league_full/.test(m) ? "That league is full" : "Couldn't join. Tap to try again"; }
+  }
+}
+
+// ---------- session ----------
+let npLastUid;
+async function npOnUser(){
+  const uid = window.NP_USER ? window.NP_USER.id : null;
+  if(uid === npLastUid) return;
+  npLastUid = uid;
+  await npLoadProfile();
+  npRenderAcct(); await npRenderInvite();
+  let later = 0; try { later = +localStorage.getItem("np_name_later") || 0; } catch(e) {}
+  if(window.NP_USER && !window.NP_PROFILE && (npPendingJoin() || Date.now() - later > 3 * 86400000)) npOpenProfile("setup");
+  if(typeof window.onNpProfile === "function") window.onNpProfile();
 }
 async function npAuthInit(){
   if(!npSB){ npRenderAcct(); return; }
   try { const { data } = await npSB.auth.getSession(); window.NP_USER = data.session ? data.session.user : null; } catch(e) {}
   npRenderAcct();
   if(location.hash === "#" || location.hash === "") history.replaceState(null, "", location.pathname + location.search);
+  npOnUser();
   npSB.auth.onAuthStateChange((_ev, session) => {
     window.NP_USER = session ? session.user : null;
     npRenderAcct();
+    npOnUser();
     if(window.NP_USER && typeof window.cloudSync === "function") window.cloudSync();
     if(typeof renderStats === "function" && !document.getElementById("stats").classList.contains("hide")) renderStats();
     if(typeof renderStart === "function" && !document.getElementById("start").classList.contains("hide")) renderStart();
