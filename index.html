@@ -288,6 +288,52 @@
   #acct .btn{width:auto;margin:0;padding:7px 12px;font-size:12px}
   #acct .who{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .signin-inline{width:auto!important;display:inline-block;margin:8px 0 0!important;padding:8px 14px!important;font-size:13px!important}
+  /* ---------- your stats ---------- */
+  #stats .card{margin-top:14px}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .kpi{background:rgba(2,4,9,.7);border:1px solid rgba(70,130,170,.22);border-radius:10px;padding:10px 10px 9px}
+  .kpi .k{font-family:'Orbitron',sans-serif;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .kpi .v{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:24px;color:#fff;margin-top:2px;line-height:1.1}
+  .kpi .s{font-size:11.5px;color:var(--dim);margin-top:1px}
+  .hero{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+  .hero .v{font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:52px;line-height:1;color:#fff}
+  .hero .s{color:var(--dim);font-size:13px}
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px}
+  .cal-head b{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:.08em;color:#e8ecf4}
+  .cal-nav{background:transparent;border:1px solid rgba(95,227,242,.45);color:#dffaff;border-radius:6px;width:34px;height:30px;font-size:16px;cursor:pointer}
+  .cal-nav:disabled{opacity:.3;cursor:default}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal .dow{font-size:10px;color:var(--dim);text-align:center;letter-spacing:.08em}
+  .cal .c{aspect-ratio:1;border-radius:4px;display:flex;align-items:flex-start;justify-content:flex-start;padding:3px 4px;font-size:10px;color:#8b93a7;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);position:relative}
+  .cal .c.off{visibility:hidden}
+  .cal .c.fut{opacity:.35}
+  .cal .c.today{border-color:rgba(255,31,142,.8)}
+  .cal button.c{cursor:pointer;border:0;font:inherit;font-size:10px}
+  .cal button.c:hover,.cal button.c:focus-visible{outline:2px solid #fff;outline-offset:1px}
+  .cal .c .sc{position:absolute;right:4px;bottom:3px;font-weight:700;font-size:11px}
+  .scale{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:11.5px;color:#c9d4e3}
+  .scale span{display:inline-flex;align-items:center;gap:5px}
+  .scale i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .bars{display:grid;grid-template-columns:auto 1fr auto;gap:8px 10px;align-items:center;margin-top:8px}
+  .bars .n{font-size:13px;color:#e8ecf4;white-space:nowrap}
+  .bars .n small{color:var(--dim);margin-left:4px}
+  .bars .t{height:14px;position:relative}
+  .bars .t i{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;min-width:2px}
+  .bars .val{font-size:13px;font-weight:700;color:#fff;text-align:right;font-variant-numeric:tabular-nums}
+  .trend{width:100%;height:auto;display:block;margin-top:6px;touch-action:none}
+  .insights{list-style:none;margin-top:6px}
+  .insights li{padding:10px 0;border-top:1px solid rgba(70,130,170,.18);font-size:14px;color:#c9d4e3;line-height:1.45}
+  .insights li:first-child{border-top:0}
+  .insights li b{color:#fff}
+  .gtable{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
+  .gtable th{text-align:left;font-weight:600;color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:6px 4px;border-bottom:1px solid rgba(70,130,170,.25)}
+  .gtable td{padding:7px 4px;border-bottom:1px solid rgba(70,130,170,.12);color:#e8ecf4;font-variant-numeric:tabular-nums}
+  .gtable td.r,.gtable th.r{text-align:right}
+  .gtable tr.click{cursor:pointer}
+  .gtable tr.click:hover td{background:rgba(18,196,220,.07)}
+  #npTip{position:fixed;z-index:50;pointer-events:none;background:rgba(5,7,14,.96);border:1px solid rgba(95,227,242,.5);border-radius:8px;padding:7px 10px;font-size:12.5px;color:#c9d4e3;box-shadow:0 6px 20px rgba(0,0,0,.6);max-width:220px}
+  #npTip b{display:block;color:#fff;font-size:15px}
+  .empty{color:#c9d4e3;font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -315,7 +361,7 @@
       <div class="ladder" id="ladder"></div>
     </div>
     <button class="btn" id="playBtn" disabled>Play today's game</button>
-    <div style="display:flex;gap:10px" id="gameBtns"></div>
+    <div style="display:flex;flex-direction:column;gap:6px" id="gameBtns"></div>
     <p class="foot"><span id="poolNote">Loading players…</span><br>A new game every day: NFL, NBA, college football and crossovers, with a little baseball, golf and the Olympics.<br>Data: nflverse, Basketball Reference, ESPN via hoopR and cfbfastR, the Lahman Baseball Database, Olympedia, Wikipedia.<br><a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="mailto:support@nicepull.io" style="color:inherit">Contact</a></p>
   </section>
 
@@ -356,6 +402,12 @@
     <button class="btn" id="nextBtn">Next prompt</button>
   </section>
 
+  <!-- STATS -->
+  <section id="stats" class="hide">
+    <div class="top"><button class="btn ghost" id="statsBack" style="width:auto;margin:0;padding:8px 14px">‹ Back</button><span>Your stats</span></div>
+    <div id="statsBody"></div>
+  </section>
+
   <!-- RESULTS -->
   <section id="results" class="hide">
     <h1 class="logo" style="font-size:24px;margin-top:6px"><b>Nice</b><br><span>Pull</span></h1>
@@ -369,6 +421,7 @@
     <textarea id="shareText" rows="5" class="hide" readonly></textarea>
     <button class="btn ghost hide" id="yResBtn"></button>
     <p class="hint hide" id="yResMsg" style="font-size:13px">Yesterday's game is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button></p>
+    <button class="btn ghost" id="statsResBtn">Your stats 📊</button>
         <button class="btn ghost" id="againBtn">Back to menu</button>
   </section>
 
@@ -554,14 +607,14 @@ const isSignedIn = () => !!window.NP_USER;
 // ---------- UI ----------
 let round = [], gameLabel = "", gameNo = 0, idx = 0, results = [], timerId = null, endsAt = 0, locked = false;
 const $ = id => document.getElementById(id);
-const show = id => ["start","archive","play","reveal","results"].forEach(s => $(s).classList.toggle("hide", s!==id));
+const show = id => ["start","archive","play","reveal","results","stats"].forEach(s => $(s).classList.toggle("hide", s!==id));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 $("ladder").innerHTML = TIERS.slice().reverse().concat([BUM]).map(t =>
   `<div class="rung"><span><i class="dot" style="background:${t.color}"></i>${t.name} <span class="remo">${t.emoji}</span></span><span class="pts">${t.pts}</span></div>`).join("");
 const STORE = "nicepull-scores-v2";
 const loadScores = () => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch(e) { return {}; } };
-const saveScore = (n, rec) => { try { const s = loadScores(); if(!s[n]) s[n] = rec; localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} };
+const saveScore = (n, rec) => { rec.at = rec.at || Date.now(); let isNew = false; try { const s = loadScores(); if(!s[n]) { s[n] = rec; isNew = true; } localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} if(isNew) cloudPush(n, rec); };
 const labelFor = n => `Game #${n}`;
 function playYesterday(msgId){
   const y = todayGame() - 1;
@@ -598,6 +651,8 @@ function renderStart(){
     `<button class="btn ghost" id="yBtn" style="margin-top:6px">${yrec ? "See yesterday's results" : "Play yesterday's game"}${isSignedIn() ? "" : " 🔒"}</button>` +
     `<p class="hint hide" id="yMsg" style="font-size:13px">Yesterday's game is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button></p>`);
   if($("yBtn")) $("yBtn").onclick = () => playYesterday("yMsg");
+  $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="statsBtn" style="margin-top:6px">Your stats 📊${isSignedIn() ? "" : " 🔒"}</button>`);
+  $("statsBtn").onclick = () => { if(typeof openStats === "function") openStats(); };
   clearInterval(cdTimer); tick(); cdTimer = setInterval(tick, 30000);
 }
 function showSaved(n){
@@ -681,7 +736,7 @@ function submit(raw){
   clearInterval(timerId);
   const bum = !raw && misses.length === 0;
   const tier = r.t >= 0 ? TIERS[r.t] : BUM;
-  results.push({q:p.q, s:p.s, name:r.name, tier, t:r.t, pts:tier.pts, timeout:!raw, misses:misses.length, bum});
+  results.push({q:p.q, s:p.s, d:p.d, name:r.name, tier, t:r.t, pts:tier.pts, timeout:!raw, misses:misses.length, bum});
 
   $("rvPrompt").innerHTML = chipHTML(p) + " " + esc(p.q);
   $("rvBadge").textContent = tier.name;
@@ -734,7 +789,7 @@ function showResults(){
   $("shareText").value = `Nice Pull · ${gameLabel}\nnicepull.io\n${grid}\n${total}/${max} · ${rankFor(total)}`;
   $("shareText").classList.add("hide");
   $("shareBtn").textContent = "Copy results";
-  saveScore(gameNo, {total, grid, rank: rankFor(total), results: results.map(r => ({q:r.q, s:r.s, name:r.name, t:r.t, pts:r.pts, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
+  saveScore(gameNo, {total, grid, rank: rankFor(total), results: results.map(r => ({q:r.q, s:r.s, d:r.d, name:r.name, t:r.t, pts:r.pts, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
   const y = todayGame() - 1, showY = gameNo === todayGame() && y >= 1;
   $("yResBtn").classList.toggle("hide", !showY); $("yResMsg").classList.add("hide");
   if(showY) $("yResBtn").textContent = (loadScores()[y] ? `See yesterday's results · #${y}` : `Play yesterday's game · #${y}`) + (isSignedIn() ? "" : " 🔒");
@@ -747,6 +802,271 @@ $("shareBtn").onclick = async () => {
   catch(e){ $("shareText").classList.remove("hide"); $("shareText").select(); $("shareBtn").textContent = "Copy the text below"; }
 };
 $("againBtn").onclick = () => { renderStart(); show("start"); };
+$("statsResBtn").onclick = () => openStats();
+
+// ---------- accounts: save games to the player's account ----------
+const sb = () => (typeof npSB !== "undefined" && npSB) ? npSB : null;
+const recToRow = (n, rec) => ({ user_id: window.NP_USER.id, game_no: +n, total: rec.total, rank: rec.rank || rankFor(rec.total),
+  results: rec.results || [], played_at: new Date(rec.at || Date.now()).toISOString() });
+async function cloudPush(n, rec){
+  if(!isSignedIn() || !sb() || !rec || !rec.results) return;
+  try { await sb().from("plays").upsert([recToRow(n, rec)], { onConflict: "user_id,game_no", ignoreDuplicates: true }); } catch(e) {}
+}
+let syncing = null;
+async function cloudSync(){
+  if(!isSignedIn() || !sb()) return;
+  if(syncing) return syncing;
+  syncing = (async () => {
+    try {
+      const { data, error } = await sb().from("plays").select("game_no,total,rank,results,played_at");
+      if(error) return;
+      const local = loadScores(), have = new Set((data || []).map(r => String(r.game_no)));
+      let changed = false;
+      for(const r of data || []){
+        if(local[r.game_no]) continue;
+        const res = Array.isArray(r.results) ? r.results : [];
+        local[r.game_no] = { total: r.total, rank: r.rank, at: Date.parse(r.played_at) || Date.now(), results: res,
+          grid: res.map(x => (x.t >= 0 ? TIERS[x.t] : BUM).emoji).join("") };
+        changed = true;
+      }
+      if(changed){ try { localStorage.setItem(STORE, JSON.stringify(local)); } catch(e) {} }
+      const missing = Object.keys(local).filter(n => !have.has(String(n)) && local[n] && local[n].results).map(n => recToRow(n, local[n]));
+      if(missing.length) await sb().from("plays").upsert(missing, { onConflict: "user_id,game_no", ignoreDuplicates: true });
+      if(!$("start").classList.contains("hide")) renderStart();
+      if(!$("stats").classList.contains("hide")) renderStats();
+    } catch(e) {} finally { syncing = null; }
+  })();
+  return syncing;
+}
+window.cloudSync = cloudSync;
+
+// ---------- your stats ----------
+const BANDS = [
+  { min: 560, name: "Gigachad/The Schwab", color: "#b5f1fb", ink: "#05121a" },
+  { min: 420, name: "Film Room Guy",       color: "#5cd3ea", ink: "#05121a" },
+  { min: 280, name: "Low Key Beast",       color: "#1fa9c6", ink: "#fff" },
+  { min: 140, name: "Kind of a Loser",     color: "#1b7f97", ink: "#fff" },
+  { min: 0,   name: "Total Bum",           color: "#1c5566", ink: "#fff" },
+];
+const bandOf = total => BANDS.find(b => total >= b.min);
+const DAYMS = 86400000;
+const gameDate = n => new Date(DAY0 + (n - 1) * DAYMS);           // UTC date of game #n
+const fmtDate = (d, opts) => d.toLocaleDateString(undefined, Object.assign({ timeZone: "UTC" }, opts || { month: "short", day: "numeric" }));
+const SPORT_NAME = { NFL: "NFL", NBA: "NBA", College: "College football", Crossover: "Crossover", MLB: "Baseball", Golf: "Golf", Olympics: "Olympics" };
+
+function demoScores(){
+  const r = rng(7), out = {}, t = statsToday();
+  const sports = ["NFL","NBA","College","Crossover","NFL","NBA","MLB"];
+  for(let n = Math.max(1, t - 40); n <= t; n++){
+    if(r() < 0.2) continue;
+    const res = sports.map((s, i) => {
+      const roll = r(), bum = roll < 0.06, miss = !bum && roll < 0.14;
+      const tt = (bum || miss) ? -1 : Math.min(5, Math.floor(r() * 4 + (s === "NBA" ? 1.4 : s === "MLB" ? -0.5 : 0.6)));
+      const tier = tt >= 0 ? TIERS[Math.max(0, tt)] : BUM;
+      return { q: "Demo prompt " + (i + 1), s, name: "Demo", t: tt >= 0 ? Math.max(0, tt) : -1, pts: tier.pts, timeout: bum || miss, misses: Math.floor(r() * 2.2), bum, d: i === 6 ? "hard" : i === 5 ? "medium" : "easy" };
+    });
+    const total = res.reduce((a, x) => a + x.pts, 0);
+    out[n] = { total, rank: rankFor(total), results: res, grid: "", at: gameDate(n).getTime() + 15 * 3600000 };
+  }
+  return out;
+}
+const NP_DEMO = new URLSearchParams(location.search).has("demo");
+const statsToday = () => NP_DEMO ? 46 : todayGame();   // sample data needs a longer history to preview
+const statsSource = () => NP_DEMO ? demoScores() : loadScores();
+
+function computeStats(scores){
+  const games = Object.keys(scores).map(Number).filter(n => n >= 1 && scores[n] && typeof scores[n].total === "number").sort((a, b) => a - b)
+    .map(n => ({ n, ...scores[n], results: scores[n].results || [] }));
+  const answers = games.flatMap(g => g.results.map(r => ({ ...r, game: g.n })));
+  const totals = games.map(g => g.total);
+  const avg = totals.length ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
+  const best = games.reduce((b, g) => !b || g.total > b.total ? g : b, null);
+  const played = new Set(games.map(g => g.n)), t = statsToday();
+  let cur = 0; for(let n = played.has(t) ? t : t - 1; n >= 1 && played.has(n); n--) cur++;
+  let longest = 0, run = 0; for(let n = 1; n <= t; n++){ run = played.has(n) ? run + 1 : 0; longest = Math.max(longest, run); }
+  // tier distribution
+  const dist = TIERS.map((tier, i) => ({ name: tier.name, color: tier.color, pts: tier.pts, count: answers.filter(a => a.t === i).length })).reverse();
+  dist.push({ name: "No hit (after misses)", color: "var(--red)", pts: 0, count: answers.filter(a => a.t < 0 && !a.bum).length });
+  dist.push({ name: "Ur a Bum (no guess)", color: BUM.color, pts: 0, count: answers.filter(a => a.t < 0 && a.bum).length });
+  // by sport
+  const bySport = {};
+  for(const a of answers){ const s = bySport[a.s] || (bySport[a.s] = { s: a.s, n: 0, pts: 0, hits: 0 }); s.n++; s.pts += a.pts; if(a.t >= 0) s.hits++; }
+  const sports = Object.values(bySport).map(s => ({ ...s, avg: s.pts / s.n, hitRate: s.hits / s.n })).sort((a, b) => b.avg - a.avg);
+  return { games, answers, avg, best, cur, longest, dist, sports };
+}
+
+function insightsFor(st){
+  const A = st.answers, out = [];
+  if(!A.length) return out;
+  const hits = A.filter(a => a.t >= 0), pct = x => Math.round(x * 100) + "%";
+  const chalk = hits.filter(a => a.t === 0).length / Math.max(1, hits.length);
+  const deep = hits.filter(a => a.t >= 4).length / Math.max(1, A.length);
+  const bums = A.filter(a => a.t < 0 && a.bum).length, lostAfterMiss = A.filter(a => a.t < 0 && !a.bum).length;
+  const firstTry = hits.filter(a => !a.misses).length / Math.max(1, hits.length);
+  const ranked = st.sports.filter(s => s.n >= 3);
+  if(ranked.length >= 2){
+    const top = ranked[0], low = ranked[ranked.length - 1];
+    out.push({ w: 5, html: `Your best sport is <b>${esc(SPORT_NAME[top.s] || top.s)}</b> at <b>${top.avg.toFixed(0)}</b> points per answer. Your weakest is <b>${esc(SPORT_NAME[low.s] || low.s)}</b> at <b>${low.avg.toFixed(0)}</b>${low.hitRate < 0.75 ? `, where you hit only ${pct(low.hitRate)} of prompts. Before the clock starts, lock in one safe name you know fits, then dig for a deeper one` : `. You're getting hits there, just famous ones, so push past the first name that comes to mind`}.` });
+  }
+  if(hits.length >= 5 && chalk >= 0.3)
+    out.push({ w: 6, html: `<b>${pct(chalk)}</b> of your hits are Chalk (10 points). The first name that comes to mind is usually the most famous one. Go one layer deeper: a Role Player is worth 4× Chalk, and a Deep Cut 8×.` });
+  if(bums)
+    out.push({ w: 7, html: `You've let <b>${bums}</b> prompt${bums > 1 ? "s" : ""} run out without a single guess. Wrong guesses cost nothing, so always fire off a name, even a long shot.` });
+  if(lostAfterMiss >= 2)
+    out.push({ w: 4, html: `<b>${lostAfterMiss}</b> times you were guessing but ran out of time. When you're under 5 seconds, switch from hunting a deep pull to the safest name you know.` });
+  if(hits.length >= 5 && firstTry < 0.6)
+    out.push({ w: 3, html: `You hit on your first guess ${pct(firstTry)} of the time. Read the fine print first: many misses are guys just under a prompt's minimum (Too Deep) or outside its years.` });
+  if(A.length >= 7 && deep >= 0.2)
+    out.push({ w: 2, html: `<b>${pct(deep)}</b> of your answers are Deep Cuts or better. That's elite ball knowledge. Keep swinging for the 100s on the 🔥 prompts.` });
+  const hard = A.filter(a => a.d === "hard");
+  if(hard.length >= 3){
+    const ha = hard.reduce((s, a) => s + a.pts, 0) / hard.length;
+    out.push({ w: 2, html: `On 🔥 Tough ones you average <b>${ha.toFixed(0)}</b> points. Those prompts have fewer valid answers, so any hit tends to score high. A sure name beats a blank there.` });
+  }
+  if(st.games.length >= 6){
+    const last = st.games.slice(-3), prev = st.games.slice(-6, -3);
+    const la = last.reduce((s, g) => s + g.total, 0) / 3, pa = prev.reduce((s, g) => s + g.total, 0) / 3;
+    if(Math.abs(la - pa) >= 30) out.push({ w: 3, html: `Your last 3 games average <b>${la.toFixed(0)}</b>, ${la > pa ? "up" : "down"} from ${pa.toFixed(0)} in the 3 before.` });
+  }
+  if(st.cur >= 3) out.push({ w: 1, html: `You're on a <b>${st.cur}-day streak</b>. Don't break it.` });
+  if(!out.length) out.push({ w: 0, html: `Play a few more games and this section will start calling out patterns in how you score.` });
+  return out.sort((a, b) => b.w - a.w).slice(0, 5);
+}
+
+// tooltip
+const tip = (() => { const d = document.createElement("div"); d.id = "npTip"; d.hidden = true; d.setAttribute("role", "status"); document.body.appendChild(d); return d; })();
+function showTip(x, y, strong, rest){
+  tip.textContent = ""; const b = document.createElement("b"); b.textContent = strong; tip.appendChild(b);
+  if(rest){ const s = document.createElement("span"); s.textContent = rest; tip.appendChild(s); }
+  tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.max(6, Math.min(innerWidth - w - 6, x - w / 2)) + "px";
+  tip.style.top = (y - h - 12 < 6 ? y + 16 : y - h - 12) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+function tipOn(el, strong, rest){
+  const at = () => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top]; };
+  el.addEventListener("pointerenter", () => showTip(...at(), strong, rest));
+  el.addEventListener("focus", () => showTip(...at(), strong, rest));
+  el.addEventListener("pointerleave", hideTip); el.addEventListener("blur", hideTip);
+}
+
+let calMonth = null;   // {y, m} in UTC
+function calendarHTML(st){
+  const t = statsToday(), byN = {}; st.games.forEach(g => byN[g.n] = g);
+  const first = new Date(DAY0), last = gameDate(t);
+  if(!calMonth) calMonth = { y: last.getUTCFullYear(), m: last.getUTCMonth() };
+  const start = new Date(Date.UTC(calMonth.y, calMonth.m, 1)), days = new Date(Date.UTC(calMonth.y, calMonth.m + 1, 0)).getUTCDate();
+  const canPrev = start > first, canNext = Date.UTC(calMonth.y, calMonth.m + 1, 1) <= last.getTime();
+  let h = `<div class="cal-head"><button class="cal-nav" id="calPrev" aria-label="Previous month" ${canPrev ? "" : "disabled"}>‹</button><b>${fmtDate(start, { month: "long", year: "numeric" })}</b><button class="cal-nav" id="calNext" aria-label="Next month" ${canNext ? "" : "disabled"}>›</button></div><div class="cal" role="grid">`;
+  h += ["S","M","T","W","T","F","S"].map(d => `<div class="dow" aria-hidden="true">${d}</div>`).join("");
+  for(let i = 0; i < start.getUTCDay(); i++) h += `<div class="c off"></div>`;
+  for(let d = 1; d <= days; d++){
+    const ts = Date.UTC(calMonth.y, calMonth.m, d), n = Math.round((ts - DAY0) / DAYMS) + 1, g = byN[n];
+    const cls = (n === t ? " today" : "") + (n > t || n < 1 ? " fut" : "");
+    if(g){ const b = bandOf(g.total);
+      h += `<button class="c${cls}" data-n="${n}" style="background:${b.color};color:${b.ink}" aria-label="${fmtDate(new Date(ts))}, game ${n}: ${g.total} points, ${esc(b.name)}">${d}<span class="sc">${g.total}</span></button>`;
+    } else h += `<div class="c${cls}">${d}</div>`;
+  }
+  h += `</div><div class="scale" aria-label="Color key">` + BANDS.slice().reverse().map(b => `<span><i style="background:${b.color}"></i>${b.min}+ ${esc(b.name)}</span>`).join("") + `</div>`;
+  return h;
+}
+
+function trendSVG(st){
+  const G = st.games.slice(-30); if(!G.length) return "";
+  const W = 340, H = 170, L = 30, R = 12, T = 10, B = 22, iw = W - L - R, ih = H - T - B;
+  const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - v / 700 * ih;
+  let s = `<svg class="trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Your total score for your last ${G.length} games">`;
+  for(const v of [0, 140, 280, 420, 560, 700]) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? "rgba(140,170,200,.14)" : "rgba(140,170,200,.4)"}" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="9.5" fill="#8b93a7" style="font-variant-numeric:tabular-nums">${v}</text>`;
+  const avgY = y(st.avg);
+  s += `<line x1="${L}" x2="${W - R}" y1="${avgY}" y2="${avgY}" stroke="#ff8fc6" stroke-width="1" opacity=".75"/><text x="${W - R}" y="${avgY - 4}" text-anchor="end" font-size="9.5" fill="#c9d4e3">your avg ${st.avg.toFixed(0)}</text>`;
+  s += `<path d="${G.map((g, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(g.total).toFixed(1)).join(" ")}" fill="none" stroke="#12c4dc" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const li = G.length - 1;
+  s += `<circle cx="${x(li)}" cy="${y(G[li].total)}" r="4.5" fill="#12c4dc" stroke="#070a13" stroke-width="2"/>`;
+  s += `<text x="${x(0)}" y="${H - 6}" font-size="9.5" fill="#8b93a7" text-anchor="${G.length === 1 ? "middle" : "start"}">#${G[0].n}</text>` + (G.length > 1 ? `<text x="${x(li)}" y="${H - 6}" font-size="9.5" fill="#8b93a7" text-anchor="end">#${G[li].n}</text>` : "");
+  s += `<line id="trX" x1="0" x2="0" y1="${T}" y2="${T + ih}" stroke="rgba(255,255,255,.35)" stroke-width="1" visibility="hidden"/><circle id="trD" r="4.5" fill="#12c4dc" stroke="#070a13" stroke-width="2" visibility="hidden"/>`;
+  s += `<rect id="trHit" x="${L}" y="${T}" width="${iw}" height="${ih}" fill="transparent" tabindex="0"/></svg>`;
+  return s;
+}
+function wireTrend(st){
+  const G = st.games.slice(-30), svg = document.querySelector("#statsBody .trend"); if(!svg || !G.length) return;
+  const W = 340, L = 30, R = 12, T = 10, ih = 170 - T - 22, iw = W - L - R;
+  const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - v / 700 * ih;
+  const hit = svg.querySelector("#trHit"), xl = svg.querySelector("#trX"), dot = svg.querySelector("#trD");
+  let cur = G.length - 1;
+  const show = i => {
+    cur = i; const g = G[i];
+    xl.setAttribute("x1", x(i)); xl.setAttribute("x2", x(i)); xl.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(g.total)); dot.setAttribute("visibility", "visible");
+    const r = svg.getBoundingClientRect(), k = r.width / W;
+    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `Game #${g.n} · ${fmtDate(gameDate(g.n))} · ${g.rank || rankFor(g.total)}`);
+  };
+  const off = () => { xl.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); };
+  hit.addEventListener("pointermove", e => { const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / (r.width / W);
+    show(G.length === 1 ? 0 : Math.max(0, Math.min(G.length - 1, Math.round((px - L) / (iw / (G.length - 1)))))); });
+  hit.addEventListener("pointerleave", off); hit.addEventListener("blur", off);
+  hit.addEventListener("focus", () => show(cur));
+  hit.addEventListener("keydown", e => { if(e.key === "ArrowLeft") { e.preventDefault(); show(Math.max(0, cur - 1)); } if(e.key === "ArrowRight") { e.preventDefault(); show(Math.min(G.length - 1, cur + 1)); } });
+}
+
+function barsHTML(rows, max, fmt){
+  return `<div class="bars">` + rows.map((r, i) => `<div class="n">${esc(r.label)}${r.sub ? `<small>${esc(r.sub)}</small>` : ""}</div>` +
+    `<div class="t" data-i="${i}" tabindex="0"><i style="width:${max ? Math.max(0.5, r.v / max * 100) : 0}%;background:${r.color}"></i></div><div class="val">${fmt(r)}</div>`).join("") + `</div>`;
+}
+
+function renderStats(){
+  const body = $("statsBody");
+  if(!isSignedIn() && !NP_DEMO){
+    body.innerHTML = `<div class="card"><div class="label">Members only</div><p class="empty">Sign in free with Google to save your games to your account and unlock your stats: a score calendar, your averages, your best sports, and tips to score deeper.</p><button class="btn" onclick="npSignIn()">Sign in with Google</button></div>`;
+    return;
+  }
+  const st = computeStats(statsSource());
+  if(!st.games.length){
+    body.innerHTML = `<div class="card"><div class="label">No games yet</div><p class="empty">Play today's game and your stats start here: a score calendar, your averages, your best sports, and tips.</p></div>`;
+    return;
+  }
+  const totalAns = st.answers.length;
+  const tierRows = st.dist.map(d => ({ label: d.name, sub: d.pts ? `${d.pts}` : "", v: d.count, color: d.color, count: d.count }));
+  const sportRows = st.sports.map(s => ({ label: SPORT_NAME[s.s] || s.s, sub: `${s.n} ans`, v: s.avg, color: "#12c4dc", s }));
+  const recent = st.games.slice(-10).reverse();
+  body.innerHTML =
+    (NP_DEMO ? `<p class="hint" style="margin-top:10px">Preview with sample data</p>` : "") +
+    `<div class="card"><div class="label">Average score</div><div class="hero"><span class="v">${st.avg.toFixed(0)}</span><span class="s">per game · ${esc(rankFor(st.avg))}</span></div>
+      <div class="kpis">
+        <div class="kpi"><div class="k">Played</div><div class="v">${st.games.length}</div><div class="s">games</div></div>
+        <div class="kpi"><div class="k">Best</div><div class="v">${st.best.total}</div><div class="s">Game #${st.best.n}</div></div>
+        <div class="kpi"><div class="k">Per answer</div><div class="v">${(st.answers.reduce((s, a) => s + a.pts, 0) / Math.max(1, totalAns)).toFixed(0)}</div><div class="s">avg points</div></div>
+        <div class="kpi"><div class="k">Streak</div><div class="v">${st.cur}</div><div class="s">day${st.cur === 1 ? "" : "s"} now</div></div>
+        <div class="kpi"><div class="k">Longest</div><div class="v">${st.longest}</div><div class="s">day streak</div></div>
+        <div class="kpi"><div class="k">Hit rate</div><div class="v">${Math.round(st.answers.filter(a => a.t >= 0).length / Math.max(1, totalAns) * 100)}%</div><div class="s">of prompts</div></div>
+      </div></div>` +
+    `<div class="card"><div class="label">Score calendar</div><div id="calWrap">${calendarHTML(st)}</div><p class="hint" style="margin-top:8px;font-size:12px">Tap a day to see that game's results.</p></div>` +
+    `<div class="card"><div class="label">Score by game</div>${trendSVG(st)}</div>` +
+    `<div class="card"><div class="label">How your answers land</div><p class="hint" style="margin-top:6px;font-size:12px">Share of all ${totalAns} answers</p>${barsHTML(tierRows, Math.max(...tierRows.map(r => r.v)), r => Math.round(r.v / Math.max(1, totalAns) * 100) + "%")}</div>` +
+    `<div class="card"><div class="label">Points by sport</div><p class="hint" style="margin-top:6px;font-size:12px">Average points per answer</p>${barsHTML(sportRows, 100, r => r.v.toFixed(0))}</div>` +
+    `<div class="card"><div class="label">Tips from your games</div><ul class="insights">${insightsFor(st).map(i => `<li>${i.html}</li>`).join("")}</ul></div>` +
+    `<div class="card"><div class="label">Recent games</div><table class="gtable"><thead><tr><th>Game</th><th>Date</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>` +
+      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>#${g.n}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(g.rank || rankFor(g.total))}</td></tr>`).join("") + `</tbody></table></div>`;
+  // wire up
+  const wireCal = () => {
+    $("calWrap").querySelectorAll("button.c").forEach(b => { const n = +b.dataset.n, g = st.games.find(x => x.n === n);
+      tipOn(b, `${g.total} pts`, `Game #${n} · ${fmtDate(gameDate(n))} · ${bandOf(g.total).name}`);
+      b.onclick = () => { hideTip(); if(!NP_DEMO) { if(showSaved(n)) return; } }; });
+    $("calPrev").onclick = () => { calMonth.m--; if(calMonth.m < 0) { calMonth.m = 11; calMonth.y--; } $("calWrap").innerHTML = calendarHTML(st); wireCal(); };
+    $("calNext").onclick = () => { calMonth.m++; if(calMonth.m > 11) { calMonth.m = 0; calMonth.y++; } $("calWrap").innerHTML = calendarHTML(st); wireCal(); };
+  };
+  wireCal(); wireTrend(st);
+  body.querySelectorAll(".bars").forEach((el, k) => el.querySelectorAll(".t").forEach(t => { const i = +t.dataset.i;
+    if(k === 0){ const r = tierRows[i]; tipOn(t, `${Math.round(r.v / Math.max(1, totalAns) * 100)}%`, `${r.label} · ${r.count} of ${totalAns} answers`); }
+    else { const r = sportRows[i]; tipOn(t, `${r.v.toFixed(0)} pts per answer`, `${r.label} · ${r.s.n} answers · ${Math.round(r.s.hitRate * 100)}% hit rate`); } }));
+  body.querySelectorAll("tr.click").forEach(tr => { const go = () => { if(!NP_DEMO) showSaved(+tr.dataset.n); };
+    tr.onclick = go; tr.onkeydown = e => { if(e.key === "Enter") go(); }; });
+}
+function openStats(){ calMonth = null; renderStats(); show("stats"); window.scrollTo(0, 0); if(isSignedIn()) cloudSync(); }
+$("statsBack").onclick = () => { hideTip(); renderStart(); show("start"); };
+window.addEventListener("scroll", hideTip, { passive: true });
+if(isSignedIn()) cloudSync();
+if(NP_DEMO) setTimeout(openStats, 0);
+
 </script>
 <script>
 // ---------- accounts (Supabase + Google) ----------
@@ -774,6 +1094,8 @@ async function npAuthInit(){
   npSB.auth.onAuthStateChange((_ev, session) => {
     window.NP_USER = session ? session.user : null;
     npRenderAcct();
+    if(window.NP_USER && typeof window.cloudSync === "function") window.cloudSync();
+    if(typeof renderStats === "function" && !document.getElementById("stats").classList.contains("hide")) renderStats();
     if(typeof renderStart === "function" && !document.getElementById("start").classList.contains("hide")) renderStart();
   });
 }
