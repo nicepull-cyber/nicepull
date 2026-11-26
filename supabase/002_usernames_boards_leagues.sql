@@ -185,4 +185,5 @@ revoke execute on function public.username_available(text), public.create_league
   from public, anon;
 grant execute on function public.username_available(text), public.create_league(text), public.join_league(text),
   public.leave_league(uuid), public.my_leagues() to authenticated;
-grant execute on function public.league_preview(text), public.board_day(uuid, int), public.board_all(uuid, int) to anon, authenticated;
+grant execute on function public.league_preview(text) to anon, authenticated;     -- invite card works before sign-in
+grant execute on function public.board_day(uuid, int), public.board_all(uuid, int) to authenticated;  -- scoreboards are members-only

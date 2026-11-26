@@ -704,7 +704,7 @@ function renderStart(){
   if($("yBtn")) $("yBtn").onclick = () => playYesterday("yMsg");
   $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="statsBtn" style="margin-top:6px">Your stats 📊${isSignedIn() ? "" : " 🔒"}</button>`);
   $("statsBtn").onclick = () => { if(typeof openStats === "function") openStats(); };
-  $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="boardsBtn" style="margin-top:6px">Scoreboard 🏆</button>`);
+  $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="boardsBtn" style="margin-top:6px">Scoreboard 🏆${isSignedIn() ? "" : " 🔒"}</button>`);
   $("boardsBtn").onclick = () => openBoards();
   clearInterval(cdTimer); tick(); cdTimer = setInterval(tick, 30000);
 }
@@ -845,6 +845,7 @@ function showResults(){
   saveScore(gameNo, {total, grid, rank: rankFor(total), results: results.map(r => ({q:r.q, s:r.s, d:r.d, name:r.name, t:r.t, pts:r.pts, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
   const y = todayGame() - 1, showY = gameNo === todayGame() && y >= 1;
   $("yResBtn").classList.toggle("hide", !showY); $("yResMsg").classList.add("hide");
+  $("boardsResBtn").textContent = "Scoreboard 🏆" + (isSignedIn() ? "" : " 🔒");
   if(showY) $("yResBtn").textContent = (loadScores()[y] ? `See yesterday's results · #${y}` : `Play yesterday's game · #${y}`) + (isSignedIn() ? "" : " 🔒");
   show("results");
 }
@@ -1135,6 +1136,7 @@ async function loadLeagues(){
 async function openBoards(scope){
   if(scope) bdScope = scope;
   hideTip(); show("boards"); window.scrollTo(0, 0);
+  if(!isSignedIn()){ renderBoards(); return; }
   $("bdBody").innerHTML = `<p class="empty">Loading…</p>`;
   if(window.NP_PUSHING){ try { await window.NP_PUSHING; } catch(e) {} }
   await loadLeagues();
@@ -1219,8 +1221,13 @@ async function shareLeague(lg){
 }
 
 async function renderBoards(){
-  renderBoardTabs();
   const body = $("bdBody"), token = ++bdToken;
+  if(!isSignedIn()){
+    $("bdTabs").innerHTML = ""; $("bdWhen").innerHTML = "";
+    body.innerHTML = `<div class="card"><div class="label">Members only</div><p class="empty">Sign in free with Google to see the scoreboards: where you rank today and all-time, plus private leagues with your friends.</p><button class="btn" onclick="npSignIn()">Sign in with Google</button></div>`;
+    return;
+  }
+  renderBoardTabs();
   if(bdScope === "new"){
     body.innerHTML = newLeagueView();
     if($("lgCreate")){ $("lgCreate").onclick = createLeague; $("lgName").onkeydown = e => { if(e.key === "Enter") createLeague(); }; $("lgName").focus(); }
