@@ -334,6 +334,7 @@
   #npTip{position:fixed;z-index:50;pointer-events:none;background:rgba(5,7,14,.96);border:1px solid rgba(95,227,242,.5);border-radius:8px;padding:7px 10px;font-size:12.5px;color:#c9d4e3;box-shadow:0 6px 20px rgba(0,0,0,.6);max-width:220px}
   #npTip b{display:block;color:#fff;font-size:15px}
   .empty{color:#c9d4e3;font-size:14px;margin-top:8px}
+  .ranksub{text-align:center;color:#c9d4e3;font-size:14px;font-style:italic;margin-top:8px;letter-spacing:.01em}
   /* ---------- scoreboard, leagues, profile ---------- */
   #boards .card{margin-top:14px}
   .seg{display:flex;gap:6px;overflow-x:auto;margin-top:14px;padding-bottom:2px;scrollbar-width:none}
@@ -452,6 +453,7 @@
     <div class="card" style="margin-top:16px">
       <div class="total" id="total"></div>
       <div class="rank" id="rank"></div>
+      <div class="ranksub" id="rankSub"></div>
       <div class="grid" id="grid"></div>
     </div>
     <div class="card" id="breakdown"></div>
@@ -479,6 +481,16 @@
 </div>
 
 <script type="text/plain" id="gamecode">
+// Titles (Austin, Nov 26): subtitle shows on the results screen only, never in shared text
+var TITLES = [
+  { min: 490, name: "Gigachad/The Schwab",      sub: "Nice! Now go touch grass." },
+  { min: 370, name: "Kind of a Beast",          sub: "how much time do you spend on Reddit?" },
+  { min: 250, name: "Sports Talk Radio Caller", sub: "you've definitely said \"I watched the tape\"" },
+  { min: 140, name: "Kind of a Bum",            sub: "your fantasy team is on autodraft" },
+  { min: 0,   name: "U Don't Know Ball",        sub: "at least you have hobbies" },
+];
+function titleFor(total){ return TITLES.find(t => total >= t.min); }
+function rankFor(total){ return titleFor(total).name; }
 const TIERS = [
   {name:"Chalk",                pts:10,  color:"var(--t0)", emoji:"🥱"},
   {name:"Box Score Guy",        pts:25,  color:"var(--t1)", emoji:"📋"},
@@ -692,7 +704,7 @@ function renderStart(){
   const tick = () => { const el = document.getElementById("nextIn"); if(el) el.textContent = untilTomorrow(); };
   if(rec){
     $("playBtn").textContent = `See today's results · #${t}`;
-    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">You played today's game: <b>${rec.total}</b> · ${esc(rec.rank || "")}<br>Next game in <b id="nextIn"></b></p>`;
+    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">You played today's game: <b>${rec.total}</b> · ${esc(rankFor(rec.total))}<br>Next game in <b id="nextIn"></b></p>`;
   } else {
     $("playBtn").textContent = `Play today's game · #${t}`;
     $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">One game a day. One shot at it.</p>`;
@@ -820,18 +832,12 @@ function submit(raw){
 }
 $("nextBtn").onclick = () => { idx++; nextPrompt(); };
 
-function rankFor(total){
-  if(total >= 560) return "Gigachad/The Schwab";
-  if(total >= 420) return "Film Room Guy";
-  if(total >= 280) return "Low Key Beast";
-  if(total >= 140) return "Kind of a Loser";
-  return "Total Bum";
-}
 function showResults(){
   const total = results.reduce((s,r)=>s+r.pts,0);
   const max = results.length*100;
   $("total").textContent = `${total} / ${max}`;
   $("rank").textContent = rankFor(total);
+  $("rankSub").textContent = titleFor(total).sub;
   const grid = results.map(r=>r.tier.emoji).join("");
   $("grid").innerHTML = results.map((r,k) => `<i class="bulb${r.t < 0 ? " off" : ""}" style="--tc:${r.tier.color};animation-delay:${.15 + k*.12}s" title="${esc(r.tier.name)}"></i>`).join("");
   $("breakdown").innerHTML = `<div class="label" style="margin-bottom:6px">Your pulls</div>` + results.map(r=>
@@ -861,7 +867,7 @@ $("boardsResBtn").onclick = () => openBoards();
 
 // ---------- accounts: save games to the player's account ----------
 const sb = () => (typeof npSB !== "undefined" && npSB) ? npSB : null;
-const recToRow = (n, rec) => ({ user_id: window.NP_USER.id, game_no: +n, total: rec.total, rank: rec.rank || rankFor(rec.total),
+const recToRow = (n, rec) => ({ user_id: window.NP_USER.id, game_no: +n, total: rec.total, rank: rankFor(rec.total),
   results: rec.results || [], played_at: new Date(rec.at || Date.now()).toISOString() });
 async function cloudPush(n, rec){
   if(!isSignedIn() || !sb() || !rec || !rec.results) return;
@@ -899,11 +905,11 @@ window.cloudSync = cloudSync;
 
 // ---------- your stats ----------
 const BANDS = [
-  { min: 560, name: "Gigachad/The Schwab", color: "#b5f1fb", ink: "#05121a" },
-  { min: 420, name: "Film Room Guy",       color: "#5cd3ea", ink: "#05121a" },
-  { min: 280, name: "Low Key Beast",       color: "#1fa9c6", ink: "#fff" },
-  { min: 140, name: "Kind of a Loser",     color: "#1b7f97", ink: "#fff" },
-  { min: 0,   name: "Total Bum",           color: "#1c5566", ink: "#fff" },
+  { min: 490, name: "Gigachad/The Schwab",      color: "#b5f1fb", ink: "#05121a" },
+  { min: 370, name: "Kind of a Beast",          color: "#5cd3ea", ink: "#05121a" },
+  { min: 250, name: "Sports Talk Radio Caller", color: "#1fa9c6", ink: "#fff" },
+  { min: 140, name: "Kind of a Bum",            color: "#1b7f97", ink: "#fff" },
+  { min: 0,   name: "U Don't Know Ball",        color: "#1c5566", ink: "#fff" },
 ];
 const bandOf = total => BANDS.find(b => total >= b.min);
 const DAYMS = 86400000;
@@ -1033,7 +1039,7 @@ function trendSVG(st){
   const W = 340, H = 170, L = 30, R = 12, T = 10, B = 22, iw = W - L - R, ih = H - T - B;
   const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - v / 700 * ih;
   let s = `<svg class="trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Your total score for your last ${G.length} games">`;
-  for(const v of [0, 140, 280, 420, 560, 700]) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? "rgba(140,170,200,.14)" : "rgba(140,170,200,.4)"}" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="9.5" fill="#8b93a7" style="font-variant-numeric:tabular-nums">${v}</text>`;
+  for(const v of [0, ...BANDS.map(b => b.min).filter(Boolean).reverse(), 700]) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? "rgba(140,170,200,.14)" : "rgba(140,170,200,.4)"}" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="9.5" fill="#8b93a7" style="font-variant-numeric:tabular-nums">${v}</text>`;
   const avgY = y(st.avg);
   s += `<line x1="${L}" x2="${W - R}" y1="${avgY}" y2="${avgY}" stroke="#ff8fc6" stroke-width="1" opacity=".75"/>`;
   s += `<path d="${G.map((g, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(g.total).toFixed(1)).join(" ")}" fill="none" stroke="#12c4dc" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -1055,7 +1061,7 @@ function wireTrend(st){
     xl.setAttribute("x1", x(i)); xl.setAttribute("x2", x(i)); xl.setAttribute("visibility", "visible");
     dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(g.total)); dot.setAttribute("visibility", "visible");
     const r = svg.getBoundingClientRect(), k = r.width / W;
-    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `Game #${g.n} · ${fmtDate(gameDate(g.n))} · ${g.rank || rankFor(g.total)}`);
+    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `Game #${g.n} · ${fmtDate(gameDate(g.n))} · ${rankFor(g.total)}`);
   };
   const off = () => { xl.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); };
   hit.addEventListener("pointermove", e => { const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / (r.width / W);
@@ -1102,7 +1108,7 @@ function renderStats(){
     `<div class="card"><div class="label">Points by sport</div><p class="hint" style="margin-top:6px;font-size:12px">Average points per answer</p>${barsHTML(sportRows, 100, r => r.v.toFixed(0))}</div>` +
     `<div class="card"><div class="label">Tips from your games</div><ul class="insights">${insightsFor(st).map(i => `<li>${i.html}</li>`).join("")}</ul></div>` +
     `<div class="card"><div class="label">Recent games</div><table class="gtable"><thead><tr><th>Game</th><th>Date</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>` +
-      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>#${g.n}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(g.rank || rankFor(g.total))}</td></tr>`).join("") + `</tbody></table></div>`;
+      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>#${g.n}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(rankFor(g.total))}</td></tr>`).join("") + `</tbody></table></div>`;
   // wire up
   const wireCal = () => {
     $("calWrap").querySelectorAll("button.c").forEach(b => { const n = +b.dataset.n, g = st.games.find(x => x.n === n);
@@ -1167,7 +1173,7 @@ function dayTable(rows, lg, n){
     if(!lg && r.pos > prev + 1 && prev >= 100) out += `<tr class="gap"><td colspan="4">⋯</td></tr>`;
     if(r.pos) prev = r.pos;
     out += `<tr class="${r.is_me ? "me" : ""}"><td class="pos">${r.pos || "–"}</td><td class="nm">${esc(r.username)}${r.is_me ? " <small>you</small>" : ""}</td>` +
-      `<td class="r">${r.total == null ? "—" : r.total}</td><td class="tt">${r.total == null ? "<small>Hasn't played</small>" : esc(r.rank || rankFor(r.total))}</td></tr>`;
+      `<td class="r">${r.total == null ? "—" : r.total}</td><td class="tt">${r.total == null ? "<small>Hasn't played</small>" : esc(rankFor(r.total))}</td></tr>`;
   }
   return `<table class="gtable btable"><thead><tr><th>#</th><th>Player</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>${out}</tbody></table>`;
 }
