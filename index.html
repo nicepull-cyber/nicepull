@@ -611,7 +611,7 @@ function judge(prompt, text){
 
 // ---------- games ----------
 function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const DAY0 = Date.UTC(2026,10,25);   // Nice Pull game #1 = Nov 25, 2026; launched Nov 26 on game #2
+const DAY0 = Date.UTC(2026,10,26);   // Nice Pull game #1 = launch day, Nov 26, 2026. Game 0 is the launch-day bonus game.
 const dayNum = () => { const n = new Date(); return Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - DAY0)/86400000) + 1; };
 // ---------- game library: 500 games, same for everyone ----------
 const N_GAMES = (Array.isArray(window.SCHED) && SCHED.length) ? SCHED.length : 500;   // grows as new batches are added
@@ -662,7 +662,7 @@ function buildSchedule(){
 const GAMES = Array.isArray(window.SCHED) && SCHED.length ? SCHED.map(g => g.map(i => BANK[i])) : buildSchedule();
 // Nice Pull runs its own track through the library, half the library ahead of Guys Naming Dudes,
 // so on any day its game (and its "yesterday's game") is never one GND is showing around then.
-const TRACK_OFFSET = Math.floor(N_GAMES / 2);
+const TRACK_OFFSET = Math.floor(N_GAMES / 2) + 1;   // +1 when launch day was renumbered #2 -> #1: same library game each day
 const libGame = k => ((k - 1 + TRACK_OFFSET) % N_GAMES + N_GAMES) % N_GAMES;   // Nice Pull game #k -> index in GAMES
 const todayGame = () => Math.max(1, dayNum());
 // Accounts arrive with sign-in (Supabase). Until then nobody is signed in and the bonus game stays locked.
@@ -676,13 +676,20 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 
 $("ladder").innerHTML = TIERS.filter(t => !t.retired).reverse().concat([BUM]).map(t =>
   `<div class="rung"><span><i class="dot" style="background:${t.color}"></i>${t.name} <span class="remo">${t.emoji}</span></span><span class="pts">${t.pts}</span></div>`).join("");
-const STORE = "nicepull-scores-v2";
+const STORE = "nicepull-scores-v3";
+// v2 numbered launch day #2; v3 numbers it #1 (and the launch-day bonus 0). Move any v2 scores down one, once.
+(() => { try { if(localStorage.getItem(STORE) === null){ const old = JSON.parse(localStorage.getItem("nicepull-scores-v2") || "{}"), out = {};
+  for(const k in old){ const n = +k - 1; if(n >= 0) out[n] = old[k]; } localStorage.setItem(STORE, JSON.stringify(out)); } } catch(e) {} })();
 const loadScores = () => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch(e) { return {}; } };
 const saveScore = (n, rec) => { rec.at = rec.at || Date.now(); let isNew = false; try { const s = loadScores(); if(!s[n]) { s[n] = rec; isNew = true; } localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} if(isNew) cloudPush(n, rec); };
-const labelFor = n => `Game #${n}`;
+const labelFor = n => n === 0 ? "Bonus game" : `Game #${n}`;
+const shortLabel = n => n === 0 ? "Bonus" : `#${n}`;
+// the members' extra game: launch day's bonus game (0), then yesterday's game every day after
+const extraName = y => y === 0 ? "the bonus game" : "yesterday's game";
+const extraMsg = y => `${y === 0 ? "The bonus game" : "Yesterday's game"} is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button>`;
 function playYesterday(msgId){
   const y = todayGame() - 1;
-  if(y < 1) return;
+  if(y < 0) return;
   if(!isSignedIn()){ $(msgId).classList.remove("hide"); return; }
   if(!showSaved(y)) playGame(y);
 }
@@ -711,9 +718,9 @@ function renderStart(){
     $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">One game a day. One shot at it.</p>`;
   }
   const y = t - 1, yrec = loadScores()[y];
-  if(rec && y >= 1) $("gameBtns").insertAdjacentHTML("beforeend",
-    `<button class="btn ghost" id="yBtn" style="margin-top:6px">${yrec ? "See yesterday's results" : "Play yesterday's game"}${isSignedIn() ? "" : " 🔒"}</button>` +
-    `<p class="hint hide" id="yMsg" style="font-size:13px">Yesterday's game is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button></p>`);
+  if(rec && y >= 0) $("gameBtns").insertAdjacentHTML("beforeend",
+    `<button class="btn ghost" id="yBtn" style="margin-top:6px">${yrec ? (y === 0 ? "See bonus game results" : "See yesterday's results") : (y === 0 ? "Play the bonus game" : "Play yesterday's game")}${isSignedIn() ? "" : " 🔒"}</button>` +
+    `<p class="hint hide" id="yMsg" style="font-size:13px">${extraMsg(y)}</p>`);
   if($("yBtn")) $("yBtn").onclick = () => playYesterday("yMsg");
   $("gameBtns").insertAdjacentHTML("beforeend", `<button class="btn ghost" id="statsBtn" style="margin-top:6px">Your stats 📊${isSignedIn() ? "" : " 🔒"}</button>`);
   $("statsBtn").onclick = () => { if(typeof openStats === "function") openStats(); };
@@ -850,10 +857,14 @@ function showResults(){
   $("shareText").classList.add("hide");
   $("shareBtn").textContent = "Copy results";
   saveScore(gameNo, {total, grid, rank: rankFor(total), results: results.map(r => ({q:r.q, s:r.s, d:r.d, name:r.name, t:r.t, pts:r.pts, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
-  const y = todayGame() - 1, showY = gameNo === todayGame() && y >= 1;
+  const y = todayGame() - 1, showY = gameNo === todayGame() && y >= 0;
   $("yResBtn").classList.toggle("hide", !showY); $("yResMsg").classList.add("hide");
   $("boardsResBtn").textContent = "Scoreboard 🏆" + (isSignedIn() ? "" : " 🔒");
-  if(showY) $("yResBtn").textContent = (loadScores()[y] ? `See yesterday's results · #${y}` : `Play yesterday's game · #${y}`) + (isSignedIn() ? "" : " 🔒");
+  if(showY){
+    $("yResBtn").textContent = (y === 0 ? (loadScores()[y] ? "See bonus game results" : "Play the bonus game")
+      : (loadScores()[y] ? `See yesterday's results · #${y}` : `Play yesterday's game · #${y}`)) + (isSignedIn() ? "" : " 🔒");
+    $("yResMsg").innerHTML = extraMsg(y);
+  }
   show("results");
 }
 $("yResBtn").onclick = () => playYesterday("yResMsg");
@@ -927,7 +938,7 @@ const BANDS = [
 ];
 const bandOf = total => BANDS.find(b => total >= b.min);
 const DAYMS = 86400000;
-const gameDate = n => new Date(DAY0 + (n - 1) * DAYMS);           // UTC date of game #n
+const gameDate = n => new Date(DAY0 + (Math.max(1, n) - 1) * DAYMS);   // UTC date of game #n (the bonus game shares launch day)
 const fmtDate = (d, opts) => d.toLocaleDateString(undefined, Object.assign({ timeZone: "UTC" }, opts || { month: "short", day: "numeric" }));
 const SPORT_NAME = { NFL: "NFL", NBA: "NBA", College: "College football", Crossover: "Crossover", MLB: "Baseball", Golf: "Golf", Olympics: "Olympics" };
 
@@ -1040,7 +1051,7 @@ function calendarHTML(st){
   h += ["S","M","T","W","T","F","S"].map(d => `<div class="dow" aria-hidden="true">${d}</div>`).join("");
   for(let i = 0; i < start.getUTCDay(); i++) h += `<div class="c off"></div>`;
   for(let d = 1; d <= days; d++){
-    const ts = Date.UTC(calMonth.y, calMonth.m, d), n = Math.round((ts - DAY0) / DAYMS) + 1, g = byN[n];
+    const ts = Date.UTC(calMonth.y, calMonth.m, d), n = Math.round((ts - DAY0) / DAYMS) + 1, g = n >= 1 ? byN[n] : undefined;   // the bonus game stays off the calendar
     const cls = (n === t ? " today" : "") + (n > t || n < 1 ? " fut" : "");
     if(g){ const b = bandOf(g.total);
       h += `<button class="c${cls}" data-n="${n}" style="background:${b.color};color:${b.ink}" aria-label="${fmtDate(new Date(ts))}, game ${n}: ${g.total} points, ${esc(b.name)}">${d}<span class="sc">${g.total}</span></button>`;
@@ -1077,7 +1088,7 @@ function wireTrend(st){
     xl.setAttribute("x1", x(i)); xl.setAttribute("x2", x(i)); xl.setAttribute("visibility", "visible");
     dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(g.total)); dot.setAttribute("visibility", "visible");
     const r = svg.getBoundingClientRect(), k = r.width / W;
-    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `Game #${g.n} · ${fmtDate(gameDate(g.n))} · ${rankFor(g.total)}`);
+    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `${labelFor(g.n)} · ${fmtDate(gameDate(g.n))} · ${rankFor(g.total)}`);
   };
   const off = () => { xl.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); };
   hit.addEventListener("pointermove", e => { const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / (r.width / W);
@@ -1112,7 +1123,7 @@ function renderStats(){
     `<div class="card"><div class="label">Average score</div><div class="hero"><span class="v">${st.avg.toFixed(0)}</span><span class="s">per game · ${esc(rankFor(st.avg))}</span></div>
       <div class="kpis">
         <div class="kpi"><div class="k">Played</div><div class="v">${st.games.length}</div><div class="s">games</div></div>
-        <div class="kpi"><div class="k">Best</div><div class="v">${st.best.total}</div><div class="s">Game #${st.best.n}</div></div>
+        <div class="kpi"><div class="k">Best</div><div class="v">${st.best.total}</div><div class="s">${labelFor(st.best.n)}</div></div>
         <div class="kpi"><div class="k">Per answer</div><div class="v">${(st.answers.reduce((s, a) => s + a.pts, 0) / Math.max(1, totalAns)).toFixed(0)}</div><div class="s">avg points</div></div>
         <div class="kpi"><div class="k">Streak</div><div class="v">${st.cur}</div><div class="s">day${st.cur === 1 ? "" : "s"} now</div></div>
         <div class="kpi"><div class="k">Longest</div><div class="v">${st.longest}</div><div class="s">day streak</div></div>
@@ -1124,11 +1135,11 @@ function renderStats(){
     `<div class="card"><div class="label">Points by sport</div><p class="hint" style="margin-top:6px;font-size:12px">Average points per answer</p>${barsHTML(sportRows, 100, r => r.v.toFixed(0))}</div>` +
     `<div class="card"><div class="label">Tips from your games</div><ul class="insights">${insightsFor(st).map(i => `<li>${i.html}</li>`).join("")}</ul></div>` +
     `<div class="card"><div class="label">Recent games</div><table class="gtable"><thead><tr><th>Game</th><th>Date</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>` +
-      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>#${g.n}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(rankFor(g.total))}</td></tr>`).join("") + `</tbody></table></div>`;
+      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>${shortLabel(g.n)}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(rankFor(g.total))}</td></tr>`).join("") + `</tbody></table></div>`;
   // wire up
   const wireCal = () => {
     $("calWrap").querySelectorAll("button.c").forEach(b => { const n = +b.dataset.n, g = st.games.find(x => x.n === n);
-      tipOn(b, `${g.total} pts`, `Game #${n} · ${fmtDate(gameDate(n))} · ${bandOf(g.total).name}`);
+      tipOn(b, `${g.total} pts`, `${labelFor(n)} · ${fmtDate(gameDate(n))} · ${bandOf(g.total).name}`);
       b.onclick = () => { hideTip(); if(!NP_DEMO) { if(showSaved(n)) return; } }; });
     $("calPrev").onclick = () => { calMonth.m--; if(calMonth.m < 0) { calMonth.m = 11; calMonth.y--; } $("calWrap").innerHTML = calendarHTML(st); wireCal(); };
     $("calNext").onclick = () => { calMonth.m++; if(calMonth.m > 11) { calMonth.m = 0; calMonth.y++; } $("calWrap").innerHTML = calendarHTML(st); wireCal(); };
@@ -1176,14 +1187,14 @@ function renderBoardTabs(){
   $("bdTabs").innerHTML = tabs.map(t => `<button class="segb${t.id === bdScope ? " on" : ""}" role="tab" aria-selected="${t.id === bdScope}" data-id="${esc(t.id)}">${esc(t.label)}</button>`).join("");
   $("bdTabs").querySelectorAll("button").forEach(b => b.onclick = () => { bdScope = b.dataset.id; renderBoards(); });
   const t = todayGame(), y = t - 1;
-  if(bdWhen === "yday" && y < 1) bdWhen = "today";
-  const whens = [{ id: "today", label: `Today · #${t}` }].concat(y >= 1 ? [{ id: "yday", label: `Yesterday · #${y}` }] : []).concat([{ id: "all", label: "All-time" }]);
+  if(bdWhen === "yday" && y < 0) bdWhen = "today";
+  const whens = [{ id: "today", label: `Today · #${t}` }].concat(y >= 0 ? [{ id: "yday", label: y === 0 ? "Bonus game" : `Yesterday · #${y}` }] : []).concat([{ id: "all", label: "All-time" }]);
   $("bdWhen").innerHTML = bdScope === "new" ? "" : whens.map(w => `<button class="segb${w.id === bdWhen ? " on" : ""}" data-id="${w.id}">${w.label}</button>`).join("");
   $("bdWhen").querySelectorAll("button").forEach(b => b.onclick = () => { bdWhen = b.dataset.id; renderBoards(); });
 }
 
 function dayTable(rows, lg, n){
-  if(!rows.length) return `<p class="empty">No scores on Game #${n} yet.${lg ? "" : " Be the first."}</p>`;
+  if(!rows.length) return `<p class="empty">No scores on ${labelFor(n)} yet.${lg ? "" : " Be the first."}</p>`;
   let out = "", prev = 0;
   for(const r of rows){
     if(!lg && r.pos > prev + 1 && prev >= 100) out += `<tr class="gap"><td colspan="4">⋯</td></tr>`;
@@ -1272,11 +1283,11 @@ async function renderBoards(){
   const mine = loadScores();
   const title = bdWhen === "all"
     ? `<div class="label">All-time</div><p class="hint" style="margin-top:6px;font-size:12px;text-align:left">Ranked by average score${lg ? "" : `. ${minGlobalGames()}+ game${minGlobalGames() === 1 ? "" : "s"} to qualify`}.</p>`
-    : `<div class="label">Game #${n} · ${fmtDate(gameDate(n), { weekday: "short", month: "short", day: "numeric" })}</div>`;
+    : `<div class="label">${labelFor(n)} · ${fmtDate(gameDate(n), { weekday: "short", month: "short", day: "numeric" })}</div>`;
   let note = "";
   if(bdWhen !== "all" && !mine[n]) note = n === t
     ? `<button class="btn small" id="bdPlay">Play today's game</button>`
-    : `<p class="hint" style="text-align:left;font-size:12px">You haven't played Game #${n}.</p>`;
+    : `<p class="hint" style="text-align:left;font-size:12px">You haven't played ${labelFor(n)}.</p>`;
   else if(!lg && hasProfile() && !window.NP_PROFILE.on_global) note = `<p class="hint" style="text-align:left;font-size:12px">You're hidden from the global scoreboard. Change it under Your profile.</p>`;
   body.innerHTML = (lg ? leagueHead(lg) : "") +
     `<div class="card">${title}${bdWhen === "all" ? allTable(rows, lg) : dayTable(rows, lg, n)}${note}</div>` +
