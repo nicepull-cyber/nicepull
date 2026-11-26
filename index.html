@@ -770,6 +770,7 @@ async function npAuthInit(){
   if(!npSB){ npRenderAcct(); return; }
   try { const { data } = await npSB.auth.getSession(); window.NP_USER = data.session ? data.session.user : null; } catch(e) {}
   npRenderAcct();
+  if(location.hash === "#" || location.hash === "") history.replaceState(null, "", location.pathname + location.search);
   npSB.auth.onAuthStateChange((_ev, session) => {
     window.NP_USER = session ? session.user : null;
     npRenderAcct();
