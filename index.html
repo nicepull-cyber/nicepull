@@ -876,28 +876,41 @@ async function cloudPush(n, rec){
   return window.NP_PUSHING;
 }
 let syncing = null;
-async function cloudSync(){
+// Sync is light: list which games the account has (game numbers only), download just the ones this
+// browser is missing, upload the ones the account is missing. At most once every 5 minutes per account.
+let lastSync = { uid: null, at: 0 };
+async function cloudSync(force){
   if(!isSignedIn() || !sb()) return;
   if(syncing) return syncing;
+  const uid = window.NP_USER.id;
+  if(!force && lastSync.uid === uid && Date.now() - lastSync.at < 5 * 60000) return;
   syncing = (async () => {
     try {
-      const { data, error } = await sb().from("plays").select("game_no,total,rank,results,played_at");
+      const { data: ids, error } = await sb().from("plays").select("game_no");
       if(error) return;
-      const local = loadScores(), have = new Set((data || []).map(r => String(r.game_no)));
+      lastSync = { uid, at: Date.now() };
+      const local = loadScores(), have = new Set((ids || []).map(r => String(r.game_no)));
+      const need = [...have].filter(n => !local[n]).map(Number);
       let changed = false;
-      for(const r of data || []){
-        if(local[r.game_no]) continue;
-        const res = Array.isArray(r.results) ? r.results : [];
-        local[r.game_no] = { total: r.total, rank: r.rank, at: Date.parse(r.played_at) || Date.now(), results: res,
-          grid: res.map(x => (x.t >= 0 ? TIERS[x.t] : BUM).emoji).join("") };
-        changed = true;
+      for(let k = 0; k < need.length; k += 100){
+        const { data, error: e2 } = await sb().from("plays").select("game_no,total,rank,results,played_at").in("game_no", need.slice(k, k + 100));
+        if(e2) break;
+        for(const r of data || []){
+          if(local[r.game_no]) continue;
+          const res = Array.isArray(r.results) ? r.results : [];
+          local[r.game_no] = { total: r.total, rank: r.rank, at: Date.parse(r.played_at) || Date.now(), results: res,
+            grid: res.map(x => (x.t >= 0 ? TIERS[x.t] : BUM).emoji).join("") };
+          changed = true;
+        }
       }
       if(changed){ try { localStorage.setItem(STORE, JSON.stringify(local)); } catch(e) {} }
       const missing = Object.keys(local).filter(n => !have.has(String(n)) && local[n] && local[n].results).map(n => recToRow(n, local[n]));
       // one row at a time, so a single bad record can't block the rest
       for(const row of missing){ try { await sb().from("plays").upsert([row], { onConflict: "user_id,game_no", ignoreDuplicates: true }); } catch(e) {} }
-      if(!$("start").classList.contains("hide")) renderStart();
-      if(!$("stats").classList.contains("hide")) renderStats();
+      if(changed){
+        if(!$("start").classList.contains("hide")) renderStart();
+        if(!$("stats").classList.contains("hide")) renderStats();
+      }
     } catch(e) {} finally { syncing = null; }
   })();
   return syncing;
