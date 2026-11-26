@@ -480,6 +480,17 @@
   </div>
 </div>
 
+<div id="npSignModal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="npSignT">
+  <div class="card" style="text-align:center">
+    <div class="label" id="npSignT">Sign in to Nice Pull</div>
+    <p class="sub" style="margin-top:8px">Free. Saves your games, unlocks your stats, the scoreboards and yesterday's game.</p>
+    <div id="npGBtn" style="display:flex;justify-content:center;min-height:44px;margin:16px 0 6px"></div>
+    <div class="missmsg" id="npSignMsg"></div>
+    <button class="btn ghost" id="npSignCancel" style="margin-top:8px">Not now</button>
+    <p class="hint" style="font-size:12px;margin-top:10px">Trouble signing in? <a href="#" id="npSignAlt" style="color:inherit">Use the other Google sign-in</a></p>
+  </div>
+</div>
+
 <script type="text/plain" id="gamecode">
 // Titles (Austin, Nov 26): subtitle shows on the results screen only, never in shared text
 var TITLES = [
@@ -1316,9 +1327,54 @@ const SB_URL = "https://ekbirqvffgoiqyjnwvej.supabase.co";
 const SB_KEY = "sb_publishable_ye0L2OnpCPV2FhlDsYnhuw_ErnlpfTi";   // publishable key: safe in the browser
 window.NP_USER = null;
 const npSB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
-function npSignIn(){
+// Google's own sign-in button (Google Identity Services) runs on nicepull.io, so Google's screen
+// says nicepull.io instead of the Supabase project address. The script loads only when someone
+// opens sign-in (no Google code on the page otherwise). The old redirect flow stays as a fallback.
+const NP_GOOGLE_CLIENT = "276870268944-lb3c5f0ni1d0pec8hkcfrss3b6857m7l.apps.googleusercontent.com";
+let npGisP = null;
+function npLoadGis(){
+  if(window.google && google.accounts && google.accounts.id) return Promise.resolve();
+  if(npGisP) return npGisP;
+  npGisP = new Promise((res, rej) => {
+    const sc = document.createElement("script");
+    sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+    sc.onload = () => res(); sc.onerror = () => { npGisP = null; rej(new Error("gis")); };
+    document.head.appendChild(sc);
+  });
+  return npGisP;
+}
+async function npNonce(){
+  const raw = Array.from(crypto.getRandomValues(new Uint8Array(24)), b => b.toString(16).padStart(2, "0")).join("");
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
+  return [raw, Array.from(new Uint8Array(h), b => b.toString(16).padStart(2, "0")).join("")];
+}
+function npSignInRedirect(){
   if(!npSB){ alert("Sign-in isn't available right now. Try refreshing."); return; }
-  npSB.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + "/" } });
+  npSB.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname + location.search } });
+}
+function npCloseSignIn(){ npEl("npSignModal").classList.add("hide"); }
+async function npSignIn(){
+  if(!npSB){ alert("Sign-in isn't available right now. Try refreshing."); return; }
+  const msg = npEl("npSignMsg"), box = npEl("npGBtn");
+  msg.textContent = ""; box.innerHTML = '<span class="hint" style="font-size:13px">Loading Google…</span>';
+  npEl("npSignModal").classList.remove("hide");
+  try { await npLoadGis(); } catch(e) { npSignInRedirect(); return; }
+  try {
+    const [raw, hashed] = await npNonce();
+    google.accounts.id.initialize({
+      client_id: NP_GOOGLE_CLIENT,
+      nonce: hashed,
+      context: "signin",
+      callback: async resp => {
+        msg.textContent = "Signing you in…";
+        const { error } = await npSB.auth.signInWithIdToken({ provider: "google", token: resp.credential, nonce: raw });
+        if(error){ msg.textContent = "That didn't work. Try again, or use the other Google sign-in below."; return; }
+        npCloseSignIn();
+      }
+    });
+    box.innerHTML = "";
+    google.accounts.id.renderButton(box, { type: "standard", theme: "filled_black", size: "large", text: "signin_with", shape: "pill", logo_alignment: "left", width: Math.min(320, box.clientWidth || 320) });
+  } catch(e) { npSignInRedirect(); }
 }
 async function npSignOut(){ if(npSB) await npSB.auth.signOut(); }
 const npEsc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1386,6 +1442,10 @@ npEl("npUserSave").onclick = npSaveProfile;
 npEl("npUser").onkeydown = e => { if(e.key === "Enter") npSaveProfile(); };
 npEl("npUserCancel").onclick = () => { if(!window.NP_PROFILE){ try { localStorage.setItem("np_name_later", Date.now()); } catch(e) {} } npCloseProfile(); };
 npEl("npModal").onclick = e => { if(e.target.id === "npModal") npCloseProfile(); };
+npEl("npSignModal").onclick = e => { if(e.target.id === "npSignModal") npCloseSignIn(); };
+npEl("npSignCancel").onclick = npCloseSignIn;
+npEl("npSignAlt").onclick = e => { e.preventDefault(); npSignInRedirect(); };
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !npEl("npSignModal").classList.contains("hide")) npCloseSignIn(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape" && !npEl("npModal").classList.contains("hide")) npCloseProfile(); });
 
 // ---------- league invites: nicepull.io/?join=CODE ----------
