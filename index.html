@@ -978,7 +978,7 @@ function trendSVG(st){
   let s = `<svg class="trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Your total score for your last ${G.length} games">`;
   for(const v of [0, 140, 280, 420, 560, 700]) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? "rgba(140,170,200,.14)" : "rgba(140,170,200,.4)"}" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="9.5" fill="#8b93a7" style="font-variant-numeric:tabular-nums">${v}</text>`;
   const avgY = y(st.avg);
-  s += `<line x1="${L}" x2="${W - R}" y1="${avgY}" y2="${avgY}" stroke="#ff8fc6" stroke-width="1" opacity=".75"/><text x="${W - R}" y="${avgY - 4}" text-anchor="end" font-size="9.5" fill="#c9d4e3">your avg ${st.avg.toFixed(0)}</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${avgY}" y2="${avgY}" stroke="#ff8fc6" stroke-width="1" opacity=".75"/><text x="${L + 4}" y="${st.avg > 600 ? avgY + 12 : avgY - 5}" text-anchor="start" font-size="9.5" fill="#c9d4e3">your avg ${st.avg.toFixed(0)}</text>`;
   s += `<path d="${G.map((g, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(g.total).toFixed(1)).join(" ")}" fill="none" stroke="#12c4dc" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   const li = G.length - 1;
   s += `<circle cx="${x(li)}" cy="${y(G[li].total)}" r="4.5" fill="#12c4dc" stroke="#070a13" stroke-width="2"/>`;
@@ -1026,7 +1026,7 @@ function renderStats(){
   }
   const totalAns = st.answers.length;
   const tierRows = st.dist.map(d => ({ label: d.name, sub: d.pts ? `${d.pts}` : "", v: d.count, color: d.color, count: d.count }));
-  const sportRows = st.sports.map(s => ({ label: SPORT_NAME[s.s] || s.s, sub: `${s.n} ans`, v: s.avg, color: "#12c4dc", s }));
+  const sportRows = st.sports.map(s => ({ label: SPORT_NAME[s.s] || s.s, sub: `${s.n} answers`, v: s.avg, color: "#12c4dc", s }));
   const recent = st.games.slice(-10).reverse();
   body.innerHTML =
     (NP_DEMO ? `<p class="hint" style="margin-top:10px">Preview with sample data</p>` : "") +
