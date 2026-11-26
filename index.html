@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nice Pull</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,600;1,700&family=Mr+Dafoe&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121212; --bg2:#1a1a1d; --card:#202024; --line:#38383f;
+    --chalk:#f6f1e7; --dim:#a9a395; --accent:#e8c547; --red:#e2553f;
+    --t0:#d9d4c7; --t1:#5fa8e8; --t2:#55c27a; --t3:#e8c547; --t4:#ef8a3a; --t5:#c46cf0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--chalk);font-family:Inter,system-ui,sans-serif;min-height:100%}
+  body{
+    background:
+      radial-gradient(120% 50% at 0% 0%,rgba(40,90,62,.45) 0,transparent 60%),radial-gradient(120% 50% at 100% 0%,rgba(110,60,20,.45) 0,transparent 60%),radial-gradient(120% 50% at 50% 100%,rgba(40,55,110,.45) 0,transparent 60%),
+      linear-gradient(180deg,var(--bg2),var(--bg));
+    min-height:100vh;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:20px 18px 40px}
+  h1,.display{font-family:'Bebas Neue',sans-serif;letter-spacing:.02em;font-weight:400}
+  .logo{font-size:56px;line-height:.9;text-align:center;margin-top:12px}
+  .logo span{color:var(--accent)}
+  .tag{text-align:center;color:var(--dim);font-size:14px;margin:10px 0 22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .card + .card{margin-top:14px}
+  .label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .rules{list-style:none;margin-top:10px;display:grid;gap:8px;font-size:14px;line-height:1.4}
+  .rules li::before{content:"▸ ";color:var(--accent)}
+  .ladder{margin-top:10px;display:grid;gap:6px}
+  .rung{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.18);font-weight:600;font-size:14px}
+  .rung .pts{font-size:22px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
+  button{font:inherit;cursor:pointer;border:0}
+  .btn{width:100%;padding:16px;border-radius:14px;background:var(--accent);color:#1a1a12;font-weight:800;font-size:17px;letter-spacing:.02em;margin-top:18px;transition:transform .08s}
+  .btn:active{transform:scale(.98)}
+  .btn.ghost{background:transparent;color:var(--chalk);border:1px solid var(--line);font-weight:600}
+  .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);font-weight:600}
+  .score-pill{background:rgba(0,0,0,.25);padding:6px 10px;border-radius:999px;color:var(--chalk)}
+  .timer{height:8px;background:rgba(0,0,0,.3);border-radius:999px;overflow:hidden;margin:14px 0 6px}
+  .timer i{display:block;height:100%;width:100%;background:var(--accent);transition:width .1s linear}
+  .timer.low i{background:var(--red)}
+  .secs{text-align:right;font-size:22px;color:var(--dim)}
+  .prompt{font-size:44px;line-height:1;margin:12px 0 8px}
+  .sub{color:var(--dim);font-size:14px;line-height:1.4}
+  .inputwrap{position:relative;margin-top:20px}
+  input{width:100%;padding:16px;border-radius:14px;border:2px solid var(--line);background:#161618;color:var(--chalk);font:600 18px Inter,sans-serif;outline:none}
+  input:focus{border-color:var(--accent)}
+  .unused{list-style:none;margin-top:6px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  .sugs:empty{display:none}
+  .sugs li{padding:13px 16px;background:#102519;font-weight:600;border-top:1px solid var(--line);cursor:pointer}
+  .sugs li:first-child{border-top:0}
+  .sugs li.on,.sugs li:hover{background:#1d4231}
+  .hint{font-size:12px;color:var(--dim);margin-top:10px;text-align:center}
+  .reveal{text-align:center;padding:26px 18px}
+  .badge{display:inline-block;padding:10px 20px;border-radius:999px;font-size:34px;color:#141410;margin:14px 0 6px;animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+  .you{font-size:20px;font-weight:700;margin-top:6px}
+  .plus{font-size:30px;color:var(--accent)}
+  .deeper{margin-top:18px;text-align:left}
+  .chip{display:inline-block;margin:6px 6px 0 0;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(0,0,0,.25)}
+  .chip small{font-weight:500;opacity:.6;margin-left:6px;font-size:12px}
+  .who{display:block;font-size:13px;font-weight:500;color:var(--dim);margin-top:2px}
+  .total{font-size:76px;line-height:1;text-align:center;color:var(--accent)}
+  .rank{text-align:center;font-weight:800;font-size:18px;margin-top:4px}
+  .grid{font-size:30px;text-align:center;letter-spacing:4px;margin:14px 0 4px}
+  .rowres{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+  .rowres:first-of-type{border-top:0}
+  .rowres b{display:block;font-weight:700}
+  .rowres small{color:var(--dim)}
+  .rowres .r{text-align:right;white-space:nowrap;font-weight:700}
+  textarea{width:100%;margin-top:10px;background:#161618;color:var(--chalk);border:1px solid var(--line);border-radius:10px;padding:10px;font:14px Inter;resize:none}
+  .foot{text-align:center;color:var(--dim);font-size:12px;margin-top:22px;line-height:1.5}
+  .hide{display:none}
+  .schip{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;padding:4px 9px;border-radius:999px;margin-right:6px;background:rgba(255,255,255,.08);font-family:Inter,sans-serif;text-transform:none}
+  .s-NFL{background:rgba(85,194,122,.18);color:#9fe3b6}.s-NBA{background:rgba(242,138,46,.18);color:#f7b57a}
+  .s-MLB{background:rgba(226,85,63,.18);color:#f2a191}.s-Golf{background:rgba(120,200,90,.18);color:#c4ec9e}
+  .s-College{background:rgba(110,140,240,.2);color:#b3c3ff}.s-Crossover{background:rgba(196,108,240,.2);color:#dcb0f5}
+  .hardchip{background:rgba(226,85,63,.2);color:#f2a191}
+  .hubback{display:inline-block;color:var(--dim);text-decoration:none;font-size:14px;font-weight:600;padding:4px 0}
+  .archgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
+  .tile{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:10px;padding:8px 0 6px;color:var(--chalk);display:flex;flex-direction:column;align-items:center;gap:2px}
+  .tile b{font-size:22px;font-weight:400;line-height:1}
+  .tile small{font-size:11px;color:var(--dim);min-height:13px}
+  .tile.done{background:rgba(255,255,255,.06)}
+  .tile.done small{color:var(--accent);font-weight:700}
+  .tile.today{border:2px solid var(--accent)}
+  .missmsg{margin-top:10px;font-size:14px;color:#f2a191;min-height:0}
+  .missmsg:empty{display:none}
+  .chip.miss{text-decoration:line-through;color:#f2a191;background:rgba(226,85,63,.12)}
+  .shake{animation:shake .3s}
+  @keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+</style>
+
+<style id="outrun">
+  /* ---------- OUTRUN: night drive palette ---------- */
+  :root{
+    --bg:#020307; --bg2:#060913; --card:rgba(7,10,19,.86); --line:rgba(70,130,170,.28);
+    --chalk:#e9eef5; --dim:#8794a8; --accent:#ff1f8e; --red:#ff2d55;
+    --cyan:#12c4dc; --pink:#ff1f8e; --sun:#ffb21f; --orange:#ff6a1f; --violet:#5b3df0;
+    --t0:#93a0b5; --t1:#12c4dc; --t2:#22e08a; --t3:#ffc93a; --t4:#ff7a2a; --t5:#ff1f8e;
+  }
+  html,body{background:var(--bg);color:var(--chalk);font-family:'Chakra Petch',Inter,system-ui,sans-serif;overflow-x:hidden}
+  body{background:radial-gradient(60% 34% at 12% 0%,rgba(18,196,220,.10) 0,transparent 70%),radial-gradient(50% 30% at 92% 6%,rgba(255,31,142,.09) 0,transparent 70%),radial-gradient(70% 30% at 50% 108%,rgba(18,110,160,.16) 0,transparent 70%),linear-gradient(180deg,#010204 0%,#04060d 55%,#070c18 100%);background-attachment:fixed;min-height:100vh}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:5;background:repeating-linear-gradient(180deg,rgba(0,0,0,.09) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+  .sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:30vh;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 70%);mask-image:linear-gradient(180deg,transparent 0,#000 70%);opacity:.22}
+  .floor::before{content:"";position:absolute;left:-60%;right:-60%;top:-40%;bottom:0;
+    background-image:linear-gradient(rgba(18,196,220,.7) 1.5px,transparent 1.5px),linear-gradient(90deg,rgba(18,196,220,.5) 1.5px,transparent 1.5px);
+    background-size:56px 56px;transform:perspective(260px) rotateX(64deg);transform-origin:50% 100%;animation:drive 3.4s linear infinite}
+  @keyframes drive{to{background-position:0 56px,0 0}}
+  @media (prefers-reduced-motion:reduce){.floor::before{animation:none}.badge{animation:none}}
+  .wrap{position:relative;z-index:1}
+  #start{position:relative}
+.sun{display:none}
+
+  /* ---------- type ---------- */
+  h1,.display{font-family:'Orbitron','Chakra Petch',sans-serif;font-weight:900;letter-spacing:.01em}
+  .logo{font-size:40px;line-height:1;margin-top:26px;text-align:center}
+  .logo b{display:inline-block;font-weight:900;text-transform:uppercase;font-style:italic;padding:0 .12em;
+    background:linear-gradient(180deg,#ffffff 0%,#cfe3ee 36%,#6f93aa 49%,#0a1320 52%,#3f6f8c 66%,#d7ecf5 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+    filter:drop-shadow(0 2px 0 #01040a) drop-shadow(0 0 12px rgba(18,196,220,.3))}
+  .logo span{display:inline-block;font-family:'Mr Dafoe','Brush Script MT',cursive;font-weight:400;font-style:normal;text-transform:none;font-size:1.75em;line-height:.9;
+    margin-top:-.12em;transform:rotate(-7deg);color:#ff4fa6;-webkit-box-reflect:below -0.18em linear-gradient(transparent 45%,rgba(0,0,0,.28));
+    text-shadow:0 0 4px #ffd3ea,0 0 12px var(--pink),0 0 30px var(--pink),0 0 70px rgba(255,31,142,.55)}
+  .tag{color:var(--dim);font-size:15px;margin:14px 0 22px}
+  .label{font-family:'Orbitron',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.2em;color:var(--cyan);text-shadow:0 0 10px rgba(18,196,220,.6)}
+
+  /* ---------- surfaces ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;position:relative;
+    box-shadow:0 0 0 1px rgba(18,196,220,.06) inset,0 0 22px rgba(18,196,220,.08),0 20px 44px rgba(0,0,0,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .card::before{content:"";position:absolute;left:14px;right:14px;top:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--cyan) 30%,var(--pink) 85%,transparent);opacity:.8}
+  .rules li::before{content:"▸ ";color:var(--pink);text-shadow:0 0 8px var(--pink)}
+  .rules{font-size:15px}
+  .rung{background:rgba(2,4,9,.7);border:1px solid rgba(70,130,170,.16);border-radius:8px}
+  .rung .pts{font-family:'Orbitron',sans-serif;font-weight:700;font-size:18px}
+  .ladder .rung:nth-child(1) .pts{color:var(--t5);text-shadow:0 0 10px var(--t5)}
+  .ladder .rung:nth-child(2) .pts{color:var(--t4)} .ladder .rung:nth-child(3) .pts{color:var(--t3)}
+  .ladder .rung:nth-child(4) .pts{color:var(--t2)} .ladder .rung:nth-child(5) .pts{color:var(--t1)}
+  .ladder .rung:nth-child(6) .pts{color:var(--t0)} .ladder .rung:nth-child(7) .pts{color:var(--red)}
+  .dot{box-shadow:0 0 10px currentColor;border-radius:2px;transform:skewX(-14deg);width:12px}
+
+  /* ---------- buttons + input ---------- */
+  .btn{border-radius:10px;font-family:'Chakra Petch',sans-serif;font-style:italic;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:17px;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.45);
+    background:linear-gradient(100deg,#c40f6c 0%,var(--pink) 45%,#7a2cf0 100%);
+    box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 0 26px rgba(255,31,142,.45),0 10px 26px rgba(0,0,0,.7)}
+  .btn:disabled{opacity:.5}
+  .btn.ghost{background:rgba(2,4,9,.6);color:var(--cyan);border:1px solid var(--cyan);font-weight:600;font-size:14px;box-shadow:0 0 14px rgba(18,196,220,.28),0 0 10px rgba(18,196,220,.18) inset;text-shadow:0 0 8px rgba(18,196,220,.6)}
+  input{background:rgba(1,2,5,.9);border:2px solid var(--cyan);border-radius:10px;color:#fff;font:600 19px 'Chakra Petch',sans-serif;box-shadow:0 0 16px rgba(18,196,220,.3),0 0 12px rgba(18,196,220,.12) inset;caret-color:var(--pink)}
+  input::placeholder{color:#56627a}
+  input:focus{border-color:var(--pink);box-shadow:0 0 22px rgba(255,31,142,.55),0 0 12px rgba(255,31,142,.18) inset}
+  textarea{background:rgba(1,2,5,.9);border:1px solid var(--line);color:var(--chalk);font-family:'Chakra Petch',sans-serif}
+
+  /* ---------- play ---------- */
+  .top{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .score-pill{background:rgba(2,4,9,.8);border:1px solid var(--pink);color:#fff;border-radius:6px;padding:6px 10px;box-shadow:0 0 12px rgba(255,31,142,.45);text-shadow:0 0 8px var(--pink)}
+  .timer{height:10px;background:rgba(2,4,9,.8);border:1px solid rgba(70,130,170,.35);border-radius:3px;transform:skewX(-18deg)}
+  .timer i{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pink));box-shadow:0 0 14px rgba(18,196,220,.7)}
+  .timer.low i{background:linear-gradient(90deg,var(--red),var(--orange));box-shadow:0 0 16px var(--red);animation:blink .5s steps(2) infinite}
+  @keyframes blink{50%{opacity:.55}}
+  .secs{font-family:'Orbitron',sans-serif;font-weight:900;font-size:22px;color:var(--cyan);text-shadow:0 0 12px rgba(18,196,220,.8)}
+  .timer.low + .secs{color:var(--red);text-shadow:0 0 12px var(--red)}
+  .prompt{font-family:'Chakra Petch',sans-serif;font-style:italic;font-weight:700;text-transform:uppercase;font-size:34px;line-height:1.05;letter-spacing:.005em;margin:14px 0 10px;
+    color:#fff;text-shadow:0 0 18px rgba(255,31,142,.55),2px 2px 0 rgba(255,31,142,.55),-1px -1px 0 rgba(18,196,220,.5)}
+  .sub{color:var(--dim);font-size:15px}
+  .hint{color:#6b7890}
+  .missmsg{color:#ff8fa6} .missmsg b{color:var(--red);text-shadow:0 0 10px var(--red)}
+  .chip{background:rgba(2,4,9,.7);border-radius:6px}
+  .chip.miss{color:#ff8fa6;background:rgba(255,56,96,.12);border:1px solid rgba(255,56,96,.35)}
+  .schip{font-family:'Orbitron',sans-serif;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;border-radius:5px;padding:6px 10px;background:rgba(2,4,9,.7);border:1px solid currentColor;box-shadow:0 0 12px -2px currentColor}
+  .s-NFL{background:rgba(2,4,9,.7);color:var(--t2)} .s-NBA{background:rgba(2,4,9,.7);color:var(--t4)}
+  .s-College{background:rgba(2,4,9,.7);color:var(--cyan)} .s-Crossover{background:rgba(2,4,9,.7);color:#a48bff}
+  .s-MLB{background:rgba(2,4,9,.7);color:#ff6b8b} .s-Olympics{background:rgba(2,4,9,.7);color:#e9eef5} .s-Golf{background:rgba(2,4,9,.7);color:var(--t3)}
+  .hardchip{background:rgba(255,56,96,.14);color:var(--red)}
+
+  /* ---------- reveal + results ---------- */
+  .reveal{padding:28px 18px}
+  .badge{font-family:'Orbitron',sans-serif;font-weight:900;font-style:italic;text-transform:uppercase;font-size:22px;letter-spacing:.04em;border-radius:6px;padding:12px 22px;color:#04060c;transform:skewX(-10deg);
+    box-shadow:0 0 0 2px rgba(255,255,255,.3) inset,0 0 30px 2px rgba(255,255,255,.14)}
+  .you{font-size:22px;font-weight:700;color:#fff;margin-top:12px}
+  .who{color:var(--dim)}
+  .plus{font-family:'Orbitron',sans-serif;font-weight:900;font-size:30px;color:#fff;text-shadow:0 0 12px var(--cyan),0 0 30px rgba(18,196,220,.6);margin-top:6px}
+  .total{font-family:'Orbitron',sans-serif;font-weight:900;font-size:54px;color:#fff;text-shadow:0 0 10px #fff,0 0 26px var(--pink),0 0 60px var(--pink)}
+  .rank{font-family:'Mr Dafoe',cursive;font-weight:400;font-size:34px;color:var(--cyan);text-shadow:0 0 8px #fff,0 0 20px var(--cyan);transform:rotate(-4deg);margin-top:2px}
+  .rowres{border-top:1px solid rgba(70,130,170,.22)}
+  .rowres small{color:var(--dim)}
+  .rowres .r{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;line-height:1.5}
+  .foot{color:#6b7890}
+  .hubback{color:var(--cyan)}
+
+  /* ---------- archive ---------- */
+  .tile{background:rgba(2,4,9,.7);border:1px solid rgba(70,130,170,.3);border-radius:6px;color:var(--chalk)}
+  .tile b{font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px}
+  .tile.done{background:rgba(255,31,142,.12);border-color:rgba(255,31,142,.5)}
+  .tile.done small{color:var(--cyan)}
+  .tile.today{border:2px solid var(--cyan);box-shadow:0 0 14px rgba(18,196,220,.6)}
+</style>
+
+<style id="noir2">
+  /* ---------- NEO-NOIR II: neon tubes, deco frames, rain ---------- */
+  .sky::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 40%,transparent 45%,rgba(0,0,0,.75) 100%)}
+  .rain{position:absolute;inset:-20% -20%;opacity:.16;transform:rotate(12deg);
+    background-image:repeating-linear-gradient(90deg,transparent 0 37px,rgba(170,215,255,.55) 37px 38px,transparent 38px 91px,rgba(170,215,255,.35) 91px 92px,transparent 92px 143px);
+    -webkit-mask-image:repeating-linear-gradient(180deg,#000 0 26px,transparent 26px 70px,#000 70px 84px,transparent 84px 150px);
+            mask-image:repeating-linear-gradient(180deg,#000 0 26px,transparent 26px 70px,#000 70px 84px,transparent 84px 150px);
+    animation:rain .9s linear infinite}
+  @keyframes rain{to{-webkit-mask-position:0 150px;mask-position:0 150px}}
+  .floor{height:26vh;opacity:.3}
+  .floor::before{background-image:linear-gradient(rgba(255,31,142,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(18,196,220,.55) 1px,transparent 1px)}
+  @media (prefers-reduced-motion:reduce){.rain{animation:none}.logo span{animation:none!important}}
+
+  /* sign */
+  .logo span{animation:flicker 7s infinite}
+  @keyframes flicker{0%,18%,21%,23%,62%,64%,100%{opacity:1}19%,22%{opacity:.35}63%{opacity:.6}}
+  .logo b{-webkit-text-stroke:.6px rgba(210,235,255,.55)}
+  #start > .label{display:flex;align-items:center;justify-content:center;gap:12px;letter-spacing:.32em}
+  #start > .label::before,#start > .label::after{content:"";flex:1;max-width:70px;height:1px;background:linear-gradient(90deg,transparent,var(--cyan));box-shadow:0 0 6px var(--cyan)}
+  #start > .label::after{background:linear-gradient(270deg,transparent,var(--pink));box-shadow:0 0 6px var(--pink)}
+  .tag{font-style:italic;letter-spacing:.02em}
+
+  /* deco frames: corner brackets + inset hairline */
+  .card{border-radius:4px;border:1px solid rgba(120,170,210,.22);outline:1px solid rgba(18,196,220,.07);outline-offset:5px;
+    background:
+      linear-gradient(var(--cyan),var(--cyan)) left 7px top 7px/16px 1.5px,
+      linear-gradient(var(--cyan),var(--cyan)) left 7px top 7px/1.5px 16px,
+      linear-gradient(var(--pink),var(--pink)) right 7px top 7px/16px 1.5px,
+      linear-gradient(var(--pink),var(--pink)) right 7px top 7px/1.5px 16px,
+      linear-gradient(var(--pink),var(--pink)) left 7px bottom 7px/16px 1.5px,
+      linear-gradient(var(--pink),var(--pink)) left 7px bottom 7px/1.5px 16px,
+      linear-gradient(var(--cyan),var(--cyan)) right 7px bottom 7px/16px 1.5px,
+      linear-gradient(var(--cyan),var(--cyan)) right 7px bottom 7px/1.5px 16px,
+      linear-gradient(180deg,rgba(14,20,36,.9),rgba(4,6,12,.92));
+    background-repeat:no-repeat;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6) inset,0 0 30px rgba(18,196,220,.07),0 24px 50px rgba(0,0,0,.8)}
+  .card::before{left:30px;right:30px;opacity:.9;box-shadow:0 0 10px rgba(255,31,142,.6)}
+  .card .label:not(#rvPrompt){display:flex;align-items:center;gap:10px}
+  .card .label:not(#rvPrompt)::before{content:"◆";font-size:8px;color:var(--pink);text-shadow:0 0 8px var(--pink)}
+  .card .label:not(#rvPrompt)::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(18,196,220,.55),transparent)}
+  .rung{border-radius:2px;border:none;border-bottom:1px solid rgba(120,170,210,.12);background:linear-gradient(90deg,rgba(255,255,255,.025),transparent);padding:10px 8px}
+  .rung .pts{font-variant-numeric:tabular-nums}
+
+  /* neon-tube buttons */
+  .btn{border-radius:3px;background:linear-gradient(180deg,rgba(255,31,142,.22),rgba(60,0,40,.55));border:1.5px solid #ff6fb8;color:#ffe6f3;
+    text-shadow:0 0 6px #ff3fa3,0 0 16px rgba(255,31,142,.8);
+    box-shadow:0 0 0 1px rgba(255,31,142,.35),0 0 18px rgba(255,31,142,.55),0 0 46px rgba(255,31,142,.25),inset 0 0 18px rgba(255,31,142,.35)}
+  .btn:active{box-shadow:0 0 0 1px rgba(255,31,142,.6),0 0 28px rgba(255,31,142,.9),inset 0 0 26px rgba(255,31,142,.55)}
+  .btn.ghost{border-radius:3px;background:linear-gradient(180deg,rgba(18,196,220,.10),rgba(0,20,30,.5));border:1.5px solid #5fe3f2;color:#dffaff;
+    text-shadow:0 0 6px var(--cyan),0 0 14px rgba(18,196,220,.7);box-shadow:0 0 14px rgba(18,196,220,.4),inset 0 0 14px rgba(18,196,220,.25)}
+
+  /* play */
+  input{border-radius:3px;border:1.5px solid rgba(95,227,242,.8);background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(4,10,18,.9))}
+  input:focus{border-color:#ff6fb8}
+  .timer{height:12px;border-radius:0;padding:2px;background:rgba(0,0,0,.8);border:1px solid rgba(120,170,210,.3)}
+  .timer i{-webkit-mask-image:repeating-linear-gradient(90deg,#000 0 9px,transparent 9px 12px);mask-image:repeating-linear-gradient(90deg,#000 0 9px,transparent 9px 12px);border-radius:0}
+  .score-pill{border-radius:2px}
+  .prompt{border-left:3px solid var(--pink);padding-left:14px;box-shadow:-10px 0 22px -14px var(--pink)}
+  .schip{border-radius:2px}
+
+  /* reveal: neon-sign badge in the tier's color */
+  .badge{background:rgba(2,4,9,.88)!important;color:var(--tc);border:2px solid var(--tc);border-radius:3px;
+    text-shadow:0 0 8px var(--tc),0 0 20px var(--tc);box-shadow:0 0 16px -2px var(--tc),0 0 44px -10px var(--tc),inset 0 0 16px -4px var(--tc)}
+  .you{letter-spacing:.01em}
+  .chip{border-radius:2px}
+  .total{letter-spacing:.02em}
+  .tile{border-radius:2px}
+</style>
+
+<style id="bulbs">
+  .grid{display:flex;justify-content:center;gap:10px;margin:18px 0 6px;letter-spacing:0;font-size:0}
+  .bulb{width:30px;height:30px;border-radius:50%;border:2px solid var(--tc);
+    background:radial-gradient(circle at 40% 38%,#fff 0 12%,var(--tc) 30%,rgba(0,0,0,.55) 78%);
+    box-shadow:0 0 10px var(--tc),0 0 26px -4px var(--tc),inset 0 0 8px rgba(0,0,0,.6);
+    opacity:0;animation:bulbOn .5s steps(1,end) forwards,buzz 5s 1.2s infinite}
+  .bulb.off{--tc:#2b3342;border-color:#2b3342;background:radial-gradient(circle at 40% 38%,#3a4252 0 12%,#161b24 40%,#05070b 80%);box-shadow:inset 0 0 8px rgba(0,0,0,.8);animation:bulbOn .5s steps(1,end) forwards}
+  @keyframes bulbOn{0%{opacity:0}30%{opacity:1}45%{opacity:.25}60%,100%{opacity:1}}
+  @keyframes buzz{0%,96%,100%{filter:none}97%{filter:brightness(.55)}98%{filter:none}99%{filter:brightness(.7)}}
+  @media (prefers-reduced-motion:reduce){.bulb{animation:none;opacity:1}}
+  #sub .rule{display:block;margin-top:6px;color:#c9d4e3}
+  #sub .rule::before{content:"Minimum · ";color:var(--cyan);font-weight:700;letter-spacing:.04em}
+  #sub .count{display:block;margin-top:6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+  .remo{font-size:14px;margin-left:4px;filter:saturate(1.1)}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><div class="rain"></div><div class="floor"></div></div>
+<div class="wrap">
+
+  <!-- START -->
+  <section id="start">
+    
+    <h1 class="logo"><b>Nice</b><br><span>Pull</span></h1>
+    <div class="label" style="text-align:center;font-size:12px;white-space:nowrap;margin-top:56px">🏈 🏀 🏟️ ⚾ ⛳ 🏅</div>
+    <p class="tag">Seven prompts. One answer each. The deeper the pull, the bigger the points.</p>
+    <div class="card">
+      <div class="label">How it works</div>
+      <ul class="rules">
+        <li>You get 25 seconds to name one player who fits the prompt.</li>
+        <li>Any right answer counts, but famous names score less.</li>
+        <li>Name someone who doesn't fit and it's <b>Not a Guy</b>: keep guessing until the clock runs out. No right answer in time: <b>Ur a Bum</b>, 0 points.</li>
+        <li>Some prompts list a minimum in the fine print (snaps, minutes or games). Name a guy under it and it's <b>Too Deep</b>: guess again.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="label">The ladder</div>
+      <div class="ladder" id="ladder"></div>
+    </div>
+    <button class="btn" id="playBtn" disabled>Play today's game</button>
+    <div style="display:flex;gap:10px" id="gameBtns"></div>
+    <p class="foot"><span id="poolNote">Loading players…</span><br>A new game every day: NFL, NBA, college football and crossovers, with a little baseball, golf and the Olympics.<br>Data: nflverse, Basketball Reference, ESPN via hoopR and cfbfastR, the Lahman Baseball Database, Olympedia, Wikipedia.</p>
+  </section>
+
+  <!-- ARCHIVE -->
+  <section id="archive" class="hide">
+    <div class="top"><button class="btn ghost" id="archBack" style="width:auto;margin:0;padding:8px 14px">‹ Back</button><span>All games</span></div>
+    <p class="sub" id="archInfo" style="margin-top:12px"></p>
+    <div class="archgrid" id="archGrid"></div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" class="hide">
+    <div class="top"><span id="qnum">Prompt 1 of 7</span><span class="score-pill" id="running">0 pts</span></div>
+    <div class="timer" id="timer"><i id="bar"></i></div>
+    <div class="secs" id="secs">25</div>
+    <div id="chip" style="margin-top:6px"></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="sub" id="sub"></div>
+    <div class="inputwrap">
+      <input id="answer" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Name a guy…" enterkeyhint="go">
+    </div>
+    <div class="missmsg" id="missMsg"></div>
+    <div id="missList"></div>
+    <button class="btn" id="lockBtn">Lock it in</button>
+    <p class="hint">Wrong guesses don't end it. Keep naming guys until you hit one or the clock runs out. Spelling doesn't have to be perfect.</p>
+  </section>
+
+  <!-- REVEAL -->
+  <section id="reveal" class="hide">
+    <div class="card reveal">
+      <div class="label" id="rvPrompt" style="text-transform:none;letter-spacing:.02em;font-size:13px"></div>
+      <div class="badge" id="rvBadge"></div>
+      <div class="you" id="rvYou"></div>
+      <div class="sub" id="rvRead" style="margin-top:4px"></div>
+      <div class="plus" id="rvPts"></div>
+      <div class="deeper" id="rvDeeper"></div>
+    </div>
+    <button class="btn" id="nextBtn">Next prompt</button>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="hide">
+    <h1 class="logo" style="font-size:24px;margin-top:6px"><b>Nice</b><br><span>Pull</span></h1>
+    <div class="card" style="margin-top:16px">
+      <div class="total" id="total"></div>
+      <div class="rank" id="rank"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="card" id="breakdown"></div>
+    <button class="btn" id="shareBtn">Copy results</button>
+    <textarea id="shareText" rows="5" class="hide" readonly></textarea>
+        <button class="btn ghost" id="againBtn">Back to menu</button>
+  </section>
+
+</div>
+
+<script type="text/plain" id="gamecode">
+const TIERS = [
+  {name:"Chalk",                pts:10,  color:"var(--t0)", emoji:"🥱"},
+  {name:"Box Score Guy",        pts:25,  color:"var(--t1)", emoji:"📋"},
+  {name:"Role Player",          pts:40,  color:"var(--t2)", emoji:"💪"},
+  {name:"Nice Pull",            pts:60,  color:"var(--t3)", emoji:"👀"},
+  {name:"Deep Cut",             pts:80,  color:"var(--t4)", emoji:"🔥"},
+  {name:"Ur a Beast",           pts:100, color:"var(--t5)", emoji:"🦍"},
+];
+const MISS = {name:"Not a Guy", pts:0, color:"var(--red)", emoji:"🧱"};   // guessed, never hit
+const BUM  = {name:"Ur a Bum",  pts:0, color:"#7d8799",   emoji:"🗑️"};   // clock ran out, no guess at all
+const TIME = 25;
+const ALIASES = {"lawfirm":["BenJarvus Green-Ellis"],"bjge":["BenJarvus Green-Ellis"],"mj": ["Michael Jordan"], "lbj": ["LeBron James"], "bron": ["LeBron James"], "kingjames": ["LeBron James"], "shaq": ["Shaquille O'Neal"], "kd": ["Kevin Durant"], "ad": ["Anthony Davis", "Adrian Peterson"], "cp3": ["Chris Paul"], "ai": ["Allen Iverson"], "kg": ["Kevin Garnett"], "dwade": ["Dwyane Wade"], "wade": ["Dwyane Wade"], "melo": ["Carmelo Anthony"], "steph": ["Stephen Curry"], "stephcurry": ["Stephen Curry"], "klay": ["Klay Thompson"], "dray": ["Draymond Green"], "russ": ["Russell Westbrook"], "westbrook": ["Russell Westbrook"], "giannis": ["Giannis Antetokounmpo"], "greekfreak": ["Giannis Antetokounmpo"], "jokic": ["Nikola Jokić"], "joker": ["Nikola Jokić"], "luka": ["Luka Dončić"], "sga": ["Shai Gilgeous-Alexander"], "shai": ["Shai Gilgeous-Alexander"], "wemby": ["Victor Wembanyama"], "kat": ["Karl-Anthony Towns"], "pg13": ["Paul George"], "tmac": ["Tracy McGrady"], "vc": ["Vince Carter"], "vinsanity": ["Vince Carter"], "dirk": ["Dirk Nowitzki"], "timmy": ["Tim Duncan"], "manu": ["Manu Ginóbili"], "penny": ["Penny Hardaway"], "pennyhardaway": ["Penny Hardaway"], "hakeem": ["Hakeem Olajuwon"], "thedream": ["Hakeem Olajuwon"], "zo": ["Alonzo Mourning"], "thewormdennisrodman": ["Dennis Rodman"], "worm": ["Dennis Rodman"], "mettaworldpeace": ["Metta World Peace"], "ronartest": ["Metta World Peace"], "artest": ["Metta World Peace"], "jrsmith": ["J.R. Smith"], "boogie": ["DeMarcus Cousins"], "cbass": ["Clifford Robinson"], "glove": ["Gary Payton"], "thegloves": ["Gary Payton"], "reggie": ["Reggie Miller", "Reggie Bush"], "dame": ["Damian Lillard"], "spida": ["Donovan Mitchell"], "ant": ["Anthony Edwards"], "antman": ["Anthony Edwards"], "zion": ["Zion Williamson"], "ja": ["Ja Morant"], "jimmybuckets": ["Jimmy Butler"], "lamelo": ["LaMelo Ball"], "lonzo": ["Lonzo Ball"], "bigfundamental": ["Tim Duncan"], "magic": ["Magic Johnson"], "bird": ["Larry Bird"], "sheed": ["Rasheed Wallace"], "bigben": ["Ben Wallace", "Ben Roethlisberger"], "scal": ["Brian Scalabrine"], "whitemamba": ["Brian Scalabrine"], "linsanity": ["Jeremy Lin"], "kobe": ["Kobe Bryant"], "mamba": ["Kobe Bryant"], "pippen": ["Scottie Pippen"], "kawhi": ["Kawhi Leonard"], "dlo": ["D'Angelo Russell"], "tatum": ["Jayson Tatum"], "flagg": ["Cooper Flagg"], "chet": ["Chet Holmgren"], "jdub": ["Jalen Williams"], "bam": ["Bam Adebayo"], "embiid": ["Joel Embiid"], "jojo": ["Joel Embiid"], "boban": ["Boban Marjanović"], "birdman": ["Chris Andersen"], "theanswer": ["Allen Iverson"], "mailman": ["Karl Malone"], "admiral": ["David Robinson"], "sircharles": ["Charles Barkley"], "chuck": ["Charles Barkley"], "deke": ["Dikembe Mutombo"], "mutombo": ["Dikembe Mutombo"], "nash": ["Steve Nash"], "rondo": ["Rajon Rondo"], "lillard": ["Damian Lillard"], "bigbaby": ["Glen Davis"], "nique": ["Dominique Wilkins"], "thejet": ["Jason Terry"], "jet": ["Jason Terry"], "sweetlou": ["Lou Williams"], "horry": ["Robert Horry"], "bigshot": ["Robert Horry"], "bigshotbob": ["Robert Horry"], "johnnyfootball": ["Johnny Manziel"], "manziel": ["Johnny Manziel"], "tebow": ["Tim Tebow"], "vy": ["Vince Young"], "rg3": ["Robert Griffin III"], "rgiii": ["Robert Griffin III"], "tua": ["Tua Tagovailoa"], "bijan": ["Bijan Robinson"], "arch": ["Arch Manning"], "primetime": ["Deion Sanders"], "coachprime": ["Deion Sanders"], "shedeur": ["Shedeur Sanders"], "stetson": ["Stetson Bennett"], "shoelace": ["Denard Robinson"], "denard": ["Denard Robinson"], "cam": ["Cam Newton"], "lamar": ["Lamar Jackson"], "kyler": ["Kyler Murray"], "baker": ["Baker Mayfield"], "burrow": ["Joe Burrow"], "jameis": ["Jameis Winston"], "famousjameis": ["Jameis Winston"], "mariota": ["Marcus Mariota"], "jaxon": ["Jaxon Smith-Njigba"], "jsn": ["Jaxon Smith-Njigba"], "mhj": ["Marvin Harrison Jr."], "jeremiahsmith": ["Jeremiah Smith"], "travishunter": ["Travis Hunter"], "mendoza": ["Fernando Mendoza"], "leinart": ["Matt Leinart"], "allday": ["Adrian Peterson"], "zeke": ["Ezekiel Elliott"], "cmc": ["Christian McCaffrey"], "djl": ["DJ Lagway"], "nico": ["Nico Iamaleava"], "ajmccarron": ["AJ McCarron"], "juju": ["JuJu Smith-Schuster"], "obj": ["Odell Beckham Jr."], "deshaun": ["Deshaun Watson"], "tlaw": ["Trevor Lawrence"], "trevorlawrence": ["Trevor Lawrence"], "etienne": ["Travis Etienne"], "tebowtime": ["Tim Tebow"], "mccoy": ["Colt McCoy"], "ochocinco": ["Chad Johnson"], "ocho": ["Chad Johnson"], "chadochocinco": ["Chad Johnson"], "odellbeckham": ["Odell Beckham Jr."], "dtr": ["Dorian Thompson-Robinson"], "kenwalker": ["Kenneth Walker III"], "carnellwilliams": ["Cadillac Williams"], "cadillac": ["Cadillac Williams"], "ab": ["Antonio Brown"], "ap": ["Adrian Peterson"], "megatron": ["Calvin Johnson"], "lt": ["Lawrence Taylor"], "mvs": ["Marquez Valdes-Scantling"], "moose": ["Daryl Johnston"], "jimmyg": ["Jimmy Garoppolo"], "kaep": ["Colin Kaepernick"], "plax": ["Plaxico Burress"], "gronk": ["Rob Gronkowski"], "beastmode": ["Marshawn Lynch"], "tjhockenson": ["T.J. Hockenson"], "jjwatt": ["J.J. Watt"], "tjwatt": ["T.J. Watt"], "aj": ["A.J. Brown"], "theboz": ["Brian Bosworth"], "sweetness": ["Walter Payton"], "neon": ["Deion Sanders"], "tiki": ["Tiki Barber"], "fitzmagic": ["Ryan Fitzpatrick"], "hollywoodbrown": ["Marquise Brown"], "hollywood": ["Marquise Brown"], "pacmanjones": ["Adam Jones"], "pacman": ["Adam Jones"], "honeybadger": ["Tyrann Mathieu"], "cheetah": ["Tyreek Hill"], "mattyice": ["Matt Ryan"], "gronkowski": ["Rob Gronkowski"], "arod": ["Alex Rodriguez"], "bigpapi": ["David Ortiz"], "papi": ["David Ortiz"], "junior": ["Ken Griffey"], "griffey": ["Ken Griffey"], "griffeyjr": ["Ken Griffey"], "kengriffeyjr": ["Ken Griffey"], "pudge": ["Ivan Rodriguez"], "bigunit": ["Randy Johnson"], "theunit": ["Randy Johnson"], "mo": ["Mariano Rivera"], "ichiro": ["Ichiro Suzuki"], "ohtani": ["Shohei Ohtani"], "shotime": ["Shohei Ohtani"], "cc": ["CC Sabathia"], "vladjr": ["Vladimir Guerrero"], "vladdy": ["Vladimir Guerrero"], "acuna": ["Ronald Acuña Jr."], "tatisjr": ["Fernando Tatis"], "kershaw": ["Clayton Kershaw"], "tiger": ["Tiger Woods"], "lefty": ["Phil Mickelson"], "phil": ["Phil Mickelson"], "rory": ["Rory McIlroy"], "goldenbear": ["Jack Nicklaus"], "jack": ["Jack Nicklaus"], "arnie": ["Arnold Palmer"], "theking": ["Arnold Palmer"], "seve": ["Seve Ballesteros"], "jt": ["Justin Thomas"], "dj": ["Dustin Johnson"], "brooks": ["Brooks Koepka"], "bryson": ["Bryson DeChambeau"], "scottie": ["Scottie Scheffler"], "spieth": ["Jordan Spieth"], "monty": ["Colin Montgomerie"], "sergio": ["Sergio García"], "thebigeasy": ["Ernie Els"], "bigeasy": ["Ernie Els"], "thesharkgregnorman": ["Greg Norman"], "shark": ["Greg Norman"], "freddie": ["Fred Couples", "Freddie Freeman"], "boomboom": ["Fred Couples"], "supermex": ["Lee Trevino"], "yeyang": ["Yang Yong-eun"]};
+
+// ---------- matching ----------
+const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"").replace(/(jr|sr|iii|ii|iv)$/,"");
+const lastOf = s => { const p = s.replace(/\s+(Jr\.?|Sr\.?|III|II|IV)$/,"").trim().split(/\s+/); return norm(p[p.length-1]); };
+const firstOf = s => norm(s.trim().split(/\s+/)[0]);
+const NORMS = NAMES.map(n => n.map(norm));
+const LASTS = NAMES.map(n => [...new Set(n.map(lastOf))]);
+const FIRSTS = NAMES.map(n => [...new Set(n.map(firstOf))]);
+const BY_NORM = new Map();
+NAMES.forEach((n,i) => NORMS[i].forEach(k => { if(!BY_NORM.has(k)) BY_NORM.set(k, []); BY_NORM.get(k).push(i); }));
+
+const NICKS = ["mike michael mikey","matt matthew matty","chris christopher christian kris","bill billy will william willie liam","bob bobby rob robby robbie robert","jim jimmy james jamie","joe joey joseph","tom tommy thomas","dan danny daniel","dave david davey","steve steven stephen steph stevie","tony anthony ant","nick nicholas nic nico nicolas","ben benjamin benny","sam samuel sammy","alex alexander","andy andrew drew","pat patrick","rich rick ricky richard dick richie","ken kenny kenneth","ron ronnie ronald","don donnie donald","ed eddie edward ted teddy","charlie chuck charles","greg gregory","jeff jeffrey geoff geoffrey","jon john johnny jonathan johnathan jack","josh joshua","zach zack zachary zac","nate nathan nathaniel","jake jacob","larry lawrence","terry terrence terrance","fred freddie frederick","gabe gabriel","manny manuel","vince vincent vinny","walt walter","tim timmy timothy","pete peter","phil phillip philip","ray raymond","reggie reginald","rod rodney","russ russell","vic victor","zeke ezekiel","gio giovani giovanni","mitch mitchell","cam cameron","tj t.j.","lou louis luis","frank francis frankie franklin","al allen alan albert","art arthur","jerry gerald jerome","hank henry","doug douglas","mo maurice moe","leo leonard","javy javier"].map(s => s.split(" ").map(x => x.replace(/[^a-z]/g,"")));
+const NICK_OF = new Map(); NICKS.forEach((g,gi) => g.forEach(n => { if(!NICK_OF.has(n)) NICK_OF.set(n, []); NICK_OF.get(n).push(gi); }));
+// "Gio" for Giovani, "Mike" for Michael: same guy if one first name starts the other or they share a nickname group
+function sameFirst(a,b){
+  if(a === b) return true;
+  const [s,l] = a.length <= b.length ? [a,b] : [b,a];
+  if(s.length >= 3 && l.startsWith(s)) return true;
+  const ga = NICK_OF.get(a), gb = NICK_OF.get(b);
+  return !!(ga && gb && ga.some(x => gb.includes(x)));
+}
+function dist(a,b,cap){
+  const m=a.length,n=b.length; if(Math.abs(m-n)>cap) return cap+1;
+  let prev2=null, prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i]; let rowMin=i;
+    for(let j=1;j<=n;j++){
+      const c=a[i-1]===b[j-1]?0:1;
+      let v=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+c);
+      if(prev2&&i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) v=Math.min(v,prev2[j-2]+1);
+      cur.push(v); if(v<rowMin) rowMin=v;
+    }
+    if(rowMin>cap) return cap+1;
+    prev2=prev; prev=cur;
+  }
+  return prev[n];
+}
+const allowed = len => len <= 4 ? 0 : len <= 7 ? 1 : len <= 12 ? 2 : 3;
+
+// pool: array of name indices; rank(i) = tier (lower = more famous) for tie-breaks
+function matchIn(text, pool, rank){
+  const k = norm(text); if(!k) return null;
+  const inPool = new Set(pool);
+  for(const nm of (ALIASES[k] || [])){
+    const al = BY_NORM.get(norm(nm));
+    if(al){ const hit = al.find(i => inPool.has(i)); if(hit !== undefined) return {i:hit, how:"alias"}; }
+  }
+  const byRank = arr => arr.sort((a,b)=>rank(a)-rank(b));
+  const ex = pool.filter(i => NORMS[i].includes(k));
+  if(ex.length){
+    const suf = (text.match(/\b(jr|sr)\.?\s*$/i) || [])[1];
+    const pick = suf ? ex.filter(i => new RegExp("\\b" + suf + "\\.?$", "i").test(NAMES[i][0])) : [];
+    return {i:byRank(pick.length ? pick : ex)[0], how:"exact"};
+  }
+  // full-name fuzzy (on the whole player list, only compare names with the same first letter)
+  const cap = allowed(k.length);
+  if(cap){
+    let best=[], bd=cap+1;
+    const cand = pool.length > 2000 ? pool.filter(i => NORMS[i][0][0] === k[0]) : pool;
+    for(const i of cand) for(const s of NORMS[i]){ const d=dist(k,s,cap); if(d<bd){bd=d;best=[i];} else if(d===bd && !best.includes(i)) best.push(i); }
+    if(best.length && bd<=cap) return {i:byRank(best)[0], how:"spell"};
+  }
+  // first name is a nickname or short form, last name matches
+  const toks = text.trim().split(/\s+/);
+  if(toks.length >= 2){
+    const fk = norm(toks[0]), lk = lastOf(text);
+    if(fk && lk){
+      const nh = pool.filter(i => LASTS[i].includes(lk) && FIRSTS[i].some(f => sameFirst(f, fk)));
+      if(nh.length){ byRank(nh); return {i:nh[0], how:"nick", also: nh.slice(1)}; }
+    }
+  }
+  // last name only
+  const single = !text.trim().includes(" ");
+  if(single){
+    let hits = pool.filter(i => LASTS[i].includes(k)), how = "last";
+    if(!hits.length && k.length >= 5){
+      const tol = k.length >= 8 ? 2 : 1;
+      hits = pool.filter(i => LASTS[i].some(l => dist(k,l,tol) <= tol)); how = "lastspell";
+    }
+    if(hits.length){ byRank(hits); return {i:hits[0], how, also: hits.slice(1)}; }
+    // distinctive first name, only if exactly one fits
+    if(k.length >= 5){
+      const fh = pool.filter(i => FIRSTS[i].includes(k));
+      if(fh.length === 1) return {i:fh[0], how:"first"};
+    }
+  }
+  return null;
+}
+const ALL = NAMES.map((_,i)=>i);
+// "G · 2015–16" style label so same-name guys don't get mistaken for someone famous
+function tagOf(i){ const m = META[i]; if(!m) return ""; const [pos,a,b] = m.split("|"); return [pos, a === b ? a : a + "–" + b.slice(2)].filter(Boolean).join(" · "); }
+
+function judge(prompt, text){
+  const pool = prompt.t.flat();
+  const tier = new Map(); prompt.t.forEach((t,ti) => t.forEach(i => tier.set(i, ti)));
+  const m = matchIn(text, pool, i => tier.get(i));
+  if(m) return {...m, name:NAMES[m.i][0], t:tier.get(m.i)};
+  // below the cut on big roster prompts
+  if(prompt.x && prompt.x.length){ const tm = matchIn(text, prompt.x, () => 0); if(tm) return {name:NAMES[tm.i][0], t:-1, how:"trim"}; }
+  const k = norm(text);
+  if(ALIASES[k]) return {name:ALIASES[k][0], t:-1, how:"other"};
+  const o = matchIn(text, ALL, () => 0);
+  return {name: o ? NAMES[o.i][0] : text.trim(), t:-1, how: o ? "other" : "unknown"};
+}
+
+// ---------- games ----------
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const DAY0 = Date.UTC(2026,10,26);   // Nice Pull game #1 = Nov 26, 2026 (launch day)
+const dayNum = () => { const n = new Date(); return Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - DAY0)/86400000) + 1; };
+// ---------- game library: 500 games, same for everyone ----------
+const N_GAMES = (Array.isArray(window.SCHED) && SCHED.length) ? SCHED.length : 500;   // grows as new batches are added
+const theme = p => p.id.split("_").slice(0, 2).join("_");
+const EXTRA = ["MLB","Golf"];
+const CORE = BANK.filter(b => !EXTRA.includes(b.s));
+function buildSchedule(){
+  const r = rng(20261123); for(let i=0;i<5;i++) r();
+  const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const decks = {};
+  const deck = (sp, d) => { const k = sp + "|" + d; if(!decks[k] || !decks[k].length) decks[k] = shuffle(CORE.filter(b => (sp === "*" || b.s === sp) && b.d === d)); return decks[k]; };
+  const games = [];
+  for(let g=0; g<N_GAMES; g++){
+    const used = new Set(), themes = new Set(), sports = {};
+    const draw = (sp, d) => {
+      const dk = deck(sp, d);
+      let at = dk.findIndex(p => !used.has(p.id) && !themes.has(theme(p)) && (sports[p.s]||0) < 3);
+      if(at < 0) at = dk.findIndex(p => !used.has(p.id));
+      if(at < 0) at = 0;
+      const p = dk.splice(at, 1)[0];
+      used.add(p.id); themes.add(theme(p)); sports[p.s] = (sports[p.s]||0) + 1;
+      return p;
+    };
+    const anySport = () => ["NFL","NBA","College","Crossover"][Math.floor(r()*4)];
+    const picks = [draw("NFL","easy"), draw("NBA","easy"), draw("College","easy"), draw("Crossover","easy"),
+                   draw(anySport(),"easy"), draw(r() < 0.5 ? "NFL" : "NBA","medium")];
+    const last = r() < 0.4 ? draw("*","hard") : draw("*","medium");
+    const body = shuffle(picks.slice(0, 5));
+    games.push([...body, picks[5], last]);
+  }
+  // Baseball and golf: about two games in three swap one easy slot for an MLB or golf prompt.
+  // Separate RNG, and games 1-2 are left alone, so the original schedule never shifts.
+  const r2 = rng(1124); for(let i=0;i<5;i++) r2();
+  const xdecks = {};
+  const xdraw = (sp, d) => { const k = sp + "|" + d; if(!xdecks[k] || !xdecks[k].length){ const a = BANK.filter(b => b.s === sp && b.d === d); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r2()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } xdecks[k] = a; } return xdecks[k].pop(); };
+  for(let g=2; g<N_GAMES; g++){
+    if(r2() >= 0.65) continue;
+    const sp = r2() < 0.55 ? "MLB" : "Golf", roll = r2();
+    const p = xdraw(sp, roll < 0.6 ? "easy" : roll < 0.93 ? "medium" : "hard") || xdraw(sp, "easy");
+    const game = games[g], count = {}; game.forEach(q => count[q.s] = (count[q.s]||0) + 1);
+    let slots = [0,1,2,3,4].filter(i => count[game[i].s] >= 2); if(!slots.length) slots = [0,1,2,3,4];
+    game[slots[Math.floor(r2()*slots.length)]] = p;
+  }
+  return games;
+}
+// The 500 games are laid out ahead of time (see data.json: schedule) so every game has a sport mix,
+// a difficulty ramp, no repeated team or prompt type, and long gaps before a prompt comes back.
+const GAMES = Array.isArray(window.SCHED) && SCHED.length ? SCHED.map(g => g.map(i => BANK[i])) : buildSchedule();
+// Nice Pull runs its own track through the library, half the library ahead of Guys Naming Dudes,
+// so on any day its game (and its "yesterday's game") is never one GND is showing around then.
+const TRACK_OFFSET = Math.floor(N_GAMES / 2);
+const libGame = k => ((k - 1 + TRACK_OFFSET) % N_GAMES + N_GAMES) % N_GAMES;   // Nice Pull game #k -> index in GAMES
+const todayGame = () => Math.max(1, dayNum());
+// Accounts arrive with sign-in (Supabase). Until then nobody is signed in and the bonus game stays locked.
+const isSignedIn = () => !!window.NP_USER;
+
+// ---------- UI ----------
+let round = [], gameLabel = "", gameNo = 0, idx = 0, results = [], timerId = null, endsAt = 0, locked = false;
+const $ = id => document.getElementById(id);
+const show = id => ["start","archive","play","reveal","results"].forEach(s => $(s).classList.toggle("hide", s!==id));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("ladder").innerHTML = TIERS.slice().reverse().concat([BUM]).map(t =>
+  `<div class="rung"><span><i class="dot" style="background:${t.color}"></i>${t.name} <span class="remo">${t.emoji}</span></span><span class="pts">${t.pts}</span></div>`).join("");
+const STORE = "nicepull-scores-v1";
+const loadScores = () => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch(e) { return {}; } };
+const saveScore = (n, rec) => { try { const s = loadScores(); if(!s[n]) s[n] = rec; localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} };
+const labelFor = n => n === todayGame() - 1 ? (n >= 1 ? `Yesterday · #${n}` : "Bonus game") : `Game #${n}`;
+const playGame = n => { gameNo = n; startGame(GAMES[libGame(n)], labelFor(n)); };
+// One game a day: only today's game is playable, and only once.
+let cdTimer = null;
+function untilTomorrow(){
+  const n = new Date(), m = new Date(n.getFullYear(), n.getMonth(), n.getDate()+1);
+  const mins = Math.max(0, Math.ceil((m - n)/60000)), h = Math.floor(mins/60);
+  return h ? `${h}h ${mins%60}m` : `${mins}m`;
+}
+function renderStart(){
+  const t = todayGame();
+  if(t === null){
+    $("playBtn").textContent = "No game today"; $("playBtn").disabled = true;
+    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">Fresh games are on the way. Check back soon.</p>`;
+    return;
+  }
+  const rec = loadScores()[t];
+  const tick = () => { const el = document.getElementById("nextIn"); if(el) el.textContent = untilTomorrow(); };
+  if(rec){
+    $("playBtn").textContent = `See today's results · #${t}`;
+    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">You played today's game: <b>${rec.total}</b> · ${esc(rec.rank || "")}<br>Next game in <b id="nextIn"></b></p>`;
+  } else {
+    $("playBtn").textContent = `Play today's game · #${t}`;
+    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">One game a day. One shot at it.</p>`;
+  }
+  const y = t - 1, yrec = loadScores()[y];
+  $("gameBtns").insertAdjacentHTML("beforeend",
+    `<button class="btn ghost" id="yBtn" style="margin-top:6px">${yrec ? "See yesterday's results" : "Play yesterday's game"}${isSignedIn() ? "" : " 🔒"}</button>` +
+    `<p class="hint hide" id="yMsg" style="font-size:13px">Yesterday's game is for members. Free accounts are coming soon.</p>`);
+  $("yBtn").onclick = () => {
+    if(!isSignedIn()){ $("yMsg").classList.remove("hide"); return; }
+    if(!showSaved(y)) playGame(y);
+  };
+  clearInterval(cdTimer); tick(); cdTimer = setInterval(tick, 30000);
+}
+function showSaved(n){
+  const rec = loadScores()[n];
+  if(!rec || !rec.results) return false;
+  gameNo = n; gameLabel = labelFor(n);
+  results = rec.results.map(r => ({...r, tier: r.t >= 0 ? TIERS[r.t] : BUM}));
+  showResults(); return true;
+}
+function renderArchive(){
+  const sc = loadScores(), t = todayGame();
+  const played = Object.keys(sc).length;
+  $("archInfo").textContent = `${played} of ${N_GAMES} played. Tap any game to play it.`;
+  let html = "";
+  for(let i=1;i<=N_GAMES;i++){
+    const s = sc[i];
+    html += `<button class="tile${s?" done":""}${i===t?" today":""}" data-n="${i}"><b>${i}</b><small>${s ? s.total : (i===t ? "today" : "")}</small></button>`;
+  }
+  $("archGrid").innerHTML = html;
+  show("archive");
+}
+$("archGrid").onclick = e => { const b = e.target.closest(".tile"); if(b) playGame(+b.dataset.n); };
+$("archBack").onclick = () => { renderStart(); show("start"); };
+$("playBtn").onclick = () => { const t = todayGame(); if(t === null) return; if(!showSaved(t)) playGame(t); };
+renderStart();
+$("poolNote").textContent = `${N_GAMES} games · ${BANK.length} prompts · ${NAMES.length.toLocaleString()} players across football, basketball, baseball, golf and the Olympics`;
+
+const SPORT = {NFL:"🏈 NFL", NBA:"🏀 NBA", College:"🏟️ College", Crossover:"🔀 Crossover", MLB:"⚾ MLB", Golf:"⛳ Golf", Olympics:"🏅 Olympics"};
+function chipHTML(p){ return `<span class="schip s-${p.s}">${SPORT[p.s]}</span>` + (p.d === "hard" ? `<span class="schip hardchip">🔥 Tough one</span>` : ""); }
+function startGame(d, label){ round = d; gameLabel = label; idx = 0; results = []; nextPrompt(); }
+const cur = () => round[idx];
+
+function nextPrompt(){
+  if(idx >= round.length) return showResults();
+  const p = cur();
+  locked = false;
+  $("qnum").textContent = `${gameLabel} · ${idx+1} of ${round.length}`;
+  $("running").textContent = `${results.reduce((s,r)=>s+r.pts,0)} pts`;
+  $("prompt").textContent = p.q;
+  $("chip").innerHTML = chipHTML(p);
+  // fine print: what counts on line 1, any minimum on line 2, then the answer count
+  const [scope, rule] = p.sub.split(" | ");
+  $("sub").innerHTML = `${esc(scope)}` + (rule ? `<span class="rule">${esc(rule)}</span>` : "") + `<span class="count">${p.t.flat().length} valid answers</span>`;
+  $("answer").value = ""; misses = [];
+  $("missMsg").innerHTML = ""; $("missList").innerHTML = "";
+  show("play");
+  setTimeout(()=>$("answer").focus(), 50);
+  endsAt = Date.now() + TIME*1000;
+  clearInterval(timerId);
+  timerId = setInterval(tick, 100); tick();
+}
+function tick(){
+  const left = Math.max(0, endsAt - Date.now());
+  $("bar").style.width = (left/(TIME*1000)*100) + "%";
+  $("secs").textContent = Math.ceil(left/1000);
+  $("timer").classList.toggle("low", left < 6000);
+  if(left <= 0) submit(null);
+}
+$("answer").addEventListener("keydown", e => {
+  if(e.key==="Enter"){ e.preventDefault(); if($("answer").value.trim()) submit($("answer").value); }
+});
+$("lockBtn").onclick = () => { if($("answer").value.trim()) submit($("answer").value); else $("answer").focus(); };
+
+let misses = [];
+function submit(raw){
+  if(locked) return;
+  const p = cur();
+  const r = raw ? judge(p, raw) : {name:null, t:-1, how:"timeout"};
+  // wrong guess with time left: stay on the prompt and let them keep guessing
+  if(raw && r.t < 0){
+    misses.push(r.name);
+    const why = r.how === "trim" ? "Too deep. He's under this prompt's minimum (see the fine print)." : r.how === "other" ? "Real guy, wrong prompt." : "Couldn't find that name.";
+    $("missMsg").innerHTML = `<b>Not a Guy:</b> ${esc(r.name)}. ${why} Keep going.`;
+    $("missList").innerHTML = misses.map(m=>`<span class="chip miss">${esc(m)}</span>`).join("");
+    $("answer").value = "";
+    $("answer").classList.remove("shake"); void $("answer").offsetWidth; $("answer").classList.add("shake");
+    $("answer").focus();
+    return;
+  }
+  locked = true;
+  clearInterval(timerId);
+  const bum = !raw && misses.length === 0;
+  const tier = r.t >= 0 ? TIERS[r.t] : BUM;
+  results.push({q:p.q, s:p.s, name:r.name, tier, t:r.t, pts:tier.pts, timeout:!raw, misses:misses.length, bum});
+
+  $("rvPrompt").innerHTML = chipHTML(p) + " " + esc(p.q);
+  $("rvBadge").textContent = tier.name;
+  $("rvBadge").style.background = tier.color; $("rvBadge").style.setProperty("--tc", tier.color);
+  $("rvYou").innerHTML = !raw ? (bum ? "Time's up. No guess." : "Time's up") : esc(r.name) + (tagOf(r.i) ? `<span class="who">${esc(tagOf(r.i))}</span>` : "");
+  $("rvPts").textContent = "+" + tier.pts;
+
+  let note = "";
+  if(raw && r.t >= 0 && !["exact","alias"].includes(r.how)) note = `You typed "${raw.trim()}"`;
+  if(r.also && r.also.length) note += (note ? " · " : "") + `Also fits: ${r.also.slice(0,2).map(i=>NAMES[i][0]).join(", ")}. Type the full name to pick one.`;
+  if(misses.length) note += (note ? " · " : "") + `Got there after ${misses.length} miss${misses.length>1?"es":""}`;
+  $("rvRead").textContent = note;
+
+  // show the best-known name from each tier above yours, so the examples are guys you could have named
+  const deeper = [];
+  for(let i=Math.max(r.t,-1)+1;i<p.t.length;i++){ const n = p.t[i].find(x => x!==r.i); if(n!==undefined) deeper.push([NAMES[n][0],i,n]); }
+  deeper.splice(0, Math.max(0, deeper.length-3)); deeper.reverse();
+  let html = "";
+  if(r.t < 0) html += `<div class="label">Chalk answers</div>` + p.t[0].slice(0,3).map(n=>`<span class="chip">${esc(NAMES[n][0])}</span>`).join("") + `<div style="height:14px"></div>`;
+  if(deeper.length && r.t < TIERS.length-1) html += `<div class="label">${r.t<0?"Deeper pulls":"Even deeper"}</div>` +
+    deeper.map(([n,i,k])=>`<span class="chip" style="border:1px solid ${TIERS[i].color}">${esc(n)}${tagOf(k) ? `<small>${esc(tagOf(k))}</small>` : ""} · ${TIERS[i].pts}</span>`).join("");
+  if(r.t === TIERS.length-1) html += `<div class="label" style="text-align:center">Nobody's touching that one.</div>`;
+  $("rvDeeper").innerHTML = html;
+
+  $("nextBtn").textContent = idx === round.length-1 ? "See results" : "Next prompt";
+  show("reveal");
+  setTimeout(()=>$("nextBtn").focus(), 50);
+}
+$("nextBtn").onclick = () => { idx++; nextPrompt(); };
+
+function rankFor(total){
+  if(total >= 560) return "Gigachad/The Schwab";
+  if(total >= 420) return "Film Room Guy";
+  if(total >= 280) return "Low Key Beast";
+  if(total >= 140) return "Kind of a Loser";
+  return "Total Bum";
+}
+function showResults(){
+  const total = results.reduce((s,r)=>s+r.pts,0);
+  const max = results.length*100;
+  $("total").textContent = `${total} / ${max}`;
+  $("rank").textContent = rankFor(total);
+  const grid = results.map(r=>r.tier.emoji).join("");
+  $("grid").innerHTML = results.map((r,k) => `<i class="bulb${r.t < 0 ? " off" : ""}" style="--tc:${r.tier.color};animation-delay:${.15 + k*.12}s" title="${esc(r.tier.name)}"></i>`).join("");
+  $("breakdown").innerHTML = `<div class="label" style="margin-bottom:6px">Your pulls</div>` + results.map(r=>
+    `<div class="rowres"><div><b>${SPORT[r.s].split(" ")[0]} ${esc(r.q)}</b><small>${r.timeout?"Time's up":esc(r.name)}${r.misses?` · ${r.misses} miss${r.misses>1?"es":""}`:""}</small></div><div class="r" style="color:${r.tier.color}">${r.tier.name}<br>${r.pts}</div></div>`).join("");
+  const best = results.reduce((a,b)=> b.pts>a.pts?b:a, results[0]);
+  const icons = results.map(r=>SPORT[r.s].split(" ")[0]).join("");
+  // link sits mid-message: iMessage only builds a big preview card when a link ends (or is) the message
+  $("shareText").value = `Nice Pull · ${gameLabel}\nnicepull.io\n${grid}\n${total}/${max} · ${rankFor(total)}`;
+  $("shareText").classList.add("hide");
+  $("shareBtn").textContent = "Copy results";
+  saveScore(gameNo, {total, grid, rank: rankFor(total), results: results.map(r => ({q:r.q, s:r.s, name:r.name, t:r.t, pts:r.pts, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
+  show("results");
+}
+$("shareBtn").onclick = async () => {
+  const txt = $("shareText").value;
+  try{ await navigator.clipboard.writeText(txt); $("shareBtn").textContent = "Copied ✓"; }
+  catch(e){ $("shareText").classList.remove("hide"); $("shareText").select(); $("shareBtn").textContent = "Copy the text below"; }
+};
+$("againBtn").onclick = () => { renderStart(); show("start"); };
+</script>
+<script>
+(async () => {
+  try {
+    const d = await (await fetch("data.json")).json();
+    window.NAMES = d.names; window.BANK = d.bank; window.META = d.meta || {}; window.SCHED = d.schedule;
+    const sc = document.createElement("script");
+    sc.textContent = document.getElementById("gamecode").textContent;
+    document.body.appendChild(sc);
+    document.getElementById("playBtn").disabled = false;
+  } catch(e) {
+    document.getElementById("poolNote").textContent = "Couldn't load the player data. Refresh to try again.";
+  }
+})();
+</script>
+</body>
+</html>
