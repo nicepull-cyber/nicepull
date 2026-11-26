@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nice Pull</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,600;1,700&family=Mr+Dafoe&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -283,6 +284,10 @@
   #sub .rule::before{content:"Minimum · ";color:var(--cyan);font-weight:700;letter-spacing:.04em}
   #sub .count{display:block;margin-top:6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
   .remo{font-size:14px;margin-left:4px;filter:saturate(1.1)}
+  #acct{display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:12px;color:var(--dim);min-height:30px}
+  #acct .btn{width:auto;margin:0;padding:7px 12px;font-size:12px}
+  #acct .who{max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .signin-inline{width:auto!important;display:inline-block;margin:8px 0 0!important;padding:8px 14px!important;font-size:13px!important}
 </style>
 </head>
 <body>
@@ -291,6 +296,7 @@
 
   <!-- START -->
   <section id="start">
+    <div id="acct"></div>
     
     <h1 class="logo"><b>Nice</b><br><span>Pull</span></h1>
     <div class="label" style="text-align:center;font-size:12px;white-space:nowrap;margin-top:56px">🏈 🏀 🏟️ ⚾ ⛳ 🏅</div>
@@ -362,7 +368,7 @@
     <button class="btn" id="shareBtn">Copy results</button>
     <textarea id="shareText" rows="5" class="hide" readonly></textarea>
     <button class="btn ghost hide" id="yResBtn"></button>
-    <p class="hint hide" id="yResMsg" style="font-size:13px">Yesterday's game is for members. Free accounts are coming soon.</p>
+    <p class="hint hide" id="yResMsg" style="font-size:13px">Yesterday's game is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button></p>
         <button class="btn ghost" id="againBtn">Back to menu</button>
   </section>
 
@@ -590,7 +596,7 @@ function renderStart(){
   const y = t - 1, yrec = loadScores()[y];
   if(rec && y >= 1) $("gameBtns").insertAdjacentHTML("beforeend",
     `<button class="btn ghost" id="yBtn" style="margin-top:6px">${yrec ? "See yesterday's results" : "Play yesterday's game"}${isSignedIn() ? "" : " 🔒"}</button>` +
-    `<p class="hint hide" id="yMsg" style="font-size:13px">Yesterday's game is for members. Free accounts are coming soon.</p>`);
+    `<p class="hint hide" id="yMsg" style="font-size:13px">Yesterday's game is for members. It's free.<br><button class="btn ghost signin-inline" onclick="npSignIn()">Sign in with Google</button></p>`);
   if($("yBtn")) $("yBtn").onclick = () => playYesterday("yMsg");
   clearInterval(cdTimer); tick(); cdTimer = setInterval(tick, 30000);
 }
@@ -743,7 +749,35 @@ $("shareBtn").onclick = async () => {
 $("againBtn").onclick = () => { renderStart(); show("start"); };
 </script>
 <script>
+// ---------- accounts (Supabase + Google) ----------
+const SB_URL = "https://ekbirqvffgoiqyjnwvej.supabase.co";
+const SB_KEY = "sb_publishable_ye0L2OnpCPV2FhlDsYnhuw_ErnlpfTi";   // publishable key: safe in the browser
+window.NP_USER = null;
+const npSB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+function npSignIn(){
+  if(!npSB){ alert("Sign-in isn't available right now. Try refreshing."); return; }
+  npSB.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + "/" } });
+}
+async function npSignOut(){ if(npSB) await npSB.auth.signOut(); }
+function npRenderAcct(){
+  const el = document.getElementById("acct"); if(!el) return;
+  const u = window.NP_USER;
+  el.innerHTML = u
+    ? `<span class="who">${(u.email||"Signed in").replace(/[&<>"]/g,"")}</span><button class="btn ghost" onclick="npSignOut()">Sign out</button>`
+    : `<button class="btn ghost" onclick="npSignIn()">Sign in with Google</button>`;
+}
+async function npAuthInit(){
+  if(!npSB){ npRenderAcct(); return; }
+  try { const { data } = await npSB.auth.getSession(); window.NP_USER = data.session ? data.session.user : null; } catch(e) {}
+  npRenderAcct();
+  npSB.auth.onAuthStateChange((_ev, session) => {
+    window.NP_USER = session ? session.user : null;
+    npRenderAcct();
+    if(typeof renderStart === "function" && !document.getElementById("start").classList.contains("hide")) renderStart();
+  });
+}
 (async () => {
+  await npAuthInit();
   try {
     const d = await (await fetch("data.json")).json();
     window.NAMES = d.names; window.BANK = d.bank; window.META = d.meta || {}; window.SCHED = d.schedule;
