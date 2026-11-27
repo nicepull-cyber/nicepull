@@ -705,7 +705,7 @@ const loadScores = () => {
   if(drop){ try { localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} }
   return s;
 };
-const saveScore = (n, rec) => { rec.at = rec.at || Date.now(); let isNew = false; try { const s = loadScores(); if(!s[n]) { s[n] = rec; isNew = true; } localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} if(isNew) cloudPush(n, rec); };
+const saveScore = (n, rec) => { rec.at = rec.at || Date.now(); let isNew = false; try { const s = loadScores(); if(!s[n]) { s[n] = rec; isNew = true; } localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} if(isNew) { cloudPush(n, rec); logFinish(n, rec); } };
 const labelFor = n => n === 0 ? "Bonus game" : `Game #${n}`;
 const shortLabel = n => n === 0 ? "Bonus" : `#${n}`;
 // the members' extra game: launch day's bonus game (0), then yesterday's game every day after
@@ -909,6 +909,22 @@ async function cloudPush(n, rec){
   if(!isSignedIn() || !sb() || !rec || !rec.results) return;
   window.NP_PUSHING = (async () => { try { await sb().from("plays").upsert([recToRow(n, rec)], { onConflict: "user_id,game_no", ignoreDuplicates: true }); } catch(e) {} })();
   return window.NP_PUSHING;
+}
+// Anonymous finished-game log, for everyone (signed in or not): game, score, title and the 7 answers.
+// No account, no IP, no device ID, no cookie. prior_games / days_since_last come from this browser's own saved
+// scores, so returning players can be counted without identifying anyone. See /privacy.
+async function logFinish(n, rec){
+  try {
+    if(!sb() || !rec || !Array.isArray(rec.results) || rec.results.length !== 7) return;
+    const before = Object.entries(loadScores()).filter(([k, r]) => +k !== +n && r && r.at).map(([, r]) => r.at);
+    const last = before.length ? Math.max(...before) : null;
+    await sb().from("finishes").insert({
+      game_no: +n, total: rec.total, rank: rec.rank, signed_in: isSignedIn(),
+      results: rec.results.map(r => ({ q: r.q, s: r.s, name: r.name || null, t: r.t, pts: r.pts, timeout: !!r.timeout, misses: r.misses || 0 })),
+      prior_games: before.length,
+      days_since_last: last ? Math.max(0, Math.round((Date.now() - last) / 86400000)) : null
+    });
+  } catch(e) {}
 }
 let syncing = null;
 // Sync is light: list which games the account has (game numbers only), download just the ones this

@@ -95,7 +95,7 @@ function dayBars(rows, key, label, days = 30){
     const x = L + i * bw + 1, h = (H - B) - y(o.v), r = Math.min(4, h, (bw - 2) / 2);
     if(o.v) s += `<path d="M${x} ${H - B}V${y(o.v) + r}q0 -${r} ${r} -${r}h${bw - 2 - 2 * r}q${r} 0 ${r} ${r}V${H - B}Z" fill="var(--cyan)"/>`;
     if(i % 7 === (out.length - 1) % 7) s += `<text x="${i === out.length - 1 ? W : x + (bw - 2) / 2}" y="${H - 6}" text-anchor="${i === out.length - 1 ? "end" : "middle"}">${o.day.slice(5).replace("-", "/")}</text>`;
-    const extra = key === "plays" && o.r ? ` · ${fmt(o.r.players)} players` : "";
+    const extra = key === "plays" && o.r && o.r.back != null ? ` · ${fmt(o.r.back)} from returning players` : "";
     s += `<rect class="hit" x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T}" data-tip="${esc(`<b>${o.day.slice(5).replace("-", "/")}</b> · ${fmt(o.v)} ${label.toLowerCase()}${extra}`)}"/>`;
   });
   s += `<line x1="${L}" x2="${W}" y1="${H - B}" y2="${H - B}" stroke="var(--dim)" stroke-width="1"/></svg>`;
@@ -119,9 +119,11 @@ function render(){
     <div><button id="refresh">Refresh</button> <a href="/" style="margin-left:10px;font-size:13px">Back to the game</a></div></header>`;
 
   h += `<div class="kpis">
+    ${d.finished != null ? kpi(fmt(d.finished), "Games finished", `everyone, since ${new Date(d.finishes_since).toLocaleDateString([], { month: "short", day: "numeric" })} · +${fmt(d.finished_24h)} last 24h`) : ""}
+    ${d.finished ? kpi(Math.round(100 * d.finished_back / d.finished) + "%", "From returning players", `${fmt(d.finished - d.finished_back)} first games · ${Math.round(100 * d.finished_signed / d.finished)}% signed in`) : ""}
     ${kpi(fmt(d.signups), "Sign-ups", `+${fmt(d.signups_24h)} today · +${fmt(d.signups_7d)} this week`)}
-    ${kpi(fmt(d.players), "Have played", `${d.signups ? Math.round(100 * d.players / d.signups) : 0}% of sign-ups`)}
-    ${kpi(fmt(d.active_24h), "Played last 24h")}
+    ${kpi(fmt(d.players), "Members who played", `${d.signups ? Math.round(100 * d.players / d.signups) : 0}% of sign-ups`)}
+    ${kpi(fmt(d.active_24h), "Members played, 24h")}
     ${kpi(fmt(d.returning), "Came back", "played 2+ games")}
     ${kpi(fmt(plays), "Games saved", d.players ? `${(plays / d.players).toFixed(1)} per player` : "")}
     ${kpi(fmt(d.usernames), "Usernames", `${fmt(d.on_global)} on the global board`)}
@@ -129,7 +131,7 @@ function render(){
   </div>`;
 
   h += `<div class="grid2">
-    <div class="card"><h2>Games played per day <span style="text-transform:none;letter-spacing:0">last 30 days</span></h2>${dayBars(d.play_days, "plays", "Games played")}</div>
+    <div class="card"><h2>Games finished per day <span style="text-transform:none;letter-spacing:0">last 30 days</span></h2>${dayBars(d.play_days, "plays", "Games played")}</div>
     <div class="card"><h2>Sign-ups per day <span style="text-transform:none;letter-spacing:0">last 30 days</span></h2>${dayBars(d.signup_days, "n", "Sign-ups")}</div>
   </div>`;
 
