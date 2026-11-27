@@ -72,7 +72,7 @@ def order(game):
         if all(B[s[k]]['s'] != B[s[k + 1]]['s'] for k in range(4)): return s
     return seq
 new = {}; prev = G3; log = collections.Counter(); notes = []
-for n in range(4, NG + 1):
+for n in range(4, NG):          # game #156 wraps onto the launch-day bonus game (schedule[78]): left alone
     game = []
     slots = ['NFL', 'NCAA', 'MLB', 'NBA', 'Mixed']; rnd.shuffle(slots)
     for k, bk in enumerate(slots):
@@ -96,7 +96,7 @@ S[gi(3)] = G3
 # verify
 flat = [i for k, g in enumerate(S) for i in g]
 assert len(flat) == len(set(flat)), 'prompt reused'
-for n in range(3, NG + 1): assert len(S[gi(n)]) == 5
+for n in range(3, NG): assert len(S[gi(n)]) == 5
 print(dict(log))
 first_fb = sorted({n for n, a, b in notes})
 print('fallback games:', len(first_fb), 'first:', first_fb[:5])
