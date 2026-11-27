@@ -691,7 +691,20 @@ const STORE = "nicepull-scores-v3";
 // v2 numbered launch day #2; v3 numbers it #1 (and the launch-day bonus 0). Move any v2 scores down one, once.
 (() => { try { if(localStorage.getItem(STORE) === null){ const old = JSON.parse(localStorage.getItem("nicepull-scores-v2") || "{}"), out = {};
   for(const k in old){ const n = +k - 1; if(n >= 0) out[n] = old[k]; } localStorage.setItem(STORE, JSON.stringify(out)); } } catch(e) {} })();
-const loadScores = () => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch(e) { return {}; } };
+// Games whose prompts were swapped after people had played them (Austin, Nov 27, 2026: Game #2 was too hard).
+// A saved result whose answers don't match the game's current prompts is dropped, so that player can play it again.
+const REISSUED = [2];
+const staleRec = (n, rec) => {
+  if(!REISSUED.includes(+n) || !rec || !Array.isArray(rec.results) || !rec.results.length) return false;
+  const g = GAMES[libGame(+n)]; if(!g) return false;
+  const qs = new Set(g.map(p => p && p.q)); return rec.results.some(r => !qs.has(r.q));
+};
+const loadScores = () => {
+  let s; try { s = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch(e) { return {}; }
+  let drop = false; for(const n of REISSUED) if(s[n] && staleRec(n, s[n])) { delete s[n]; drop = true; }
+  if(drop){ try { localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} }
+  return s;
+};
 const saveScore = (n, rec) => { rec.at = rec.at || Date.now(); let isNew = false; try { const s = loadScores(); if(!s[n]) { s[n] = rec; isNew = true; } localStorage.setItem(STORE, JSON.stringify(s)); } catch(e) {} if(isNew) cloudPush(n, rec); };
 const labelFor = n => n === 0 ? "Bonus game" : `Game #${n}`;
 const shortLabel = n => n === 0 ? "Bonus" : `#${n}`;
@@ -920,6 +933,7 @@ async function cloudSync(force){
         for(const r of data || []){
           if(local[r.game_no]) continue;
           const res = Array.isArray(r.results) ? r.results : [];
+          if(staleRec(r.game_no, { results: res })) continue;   // old version of a re-issued game
           local[r.game_no] = { total: r.total, rank: r.rank, at: Date.parse(r.played_at) || Date.now(), results: res,
             grid: res.map(x => (x.t >= 0 ? TIERS[x.t] : BUM).emoji).join("") };
           changed = true;
