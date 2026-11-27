@@ -177,6 +177,21 @@
   .s-College{background:rgba(2,4,9,.7);color:var(--cyan)} .s-Crossover{background:rgba(2,4,9,.7);color:#a48bff}
   .s-MLB{background:rgba(2,4,9,.7);color:#ff6b8b} .s-Olympics{background:rgba(2,4,9,.7);color:#e9eef5} .s-Golf{background:rgba(2,4,9,.7);color:var(--t3)} .s-Tennis{background:rgba(2,4,9,.7);color:#d7f36b}
   .multchip{background:#ffc93a!important;color:#05070d!important;border-color:#ffc93a!important;font-weight:900}
+  /* 5-prompt games: step row and the ×2 / ×3 banner (Austin, Nov 27: make the multipliers obvious) */
+  .steps{display:flex;gap:6px;margin:10px 0 2px}
+  .steps span{flex:1;text-align:center;font:700 11px 'Orbitron',sans-serif;letter-spacing:.08em;padding:5px 0;border-radius:6px;
+    border:1px solid rgba(70,130,170,.35);color:#8b93a7;background:rgba(2,4,9,.7)}
+  .steps span.x{border-color:rgba(255,201,58,.55);color:#ffc93a}
+  .steps span.done{opacity:.45}
+  .steps span.on{color:#05070d;background:#12c4dc;border-color:#12c4dc;box-shadow:0 0 12px rgba(18,196,220,.6)}
+  .steps span.x.on{background:#ffc93a;border-color:#ffc93a;box-shadow:0 0 16px rgba(255,201,58,.75)}
+  .multbanner{margin:12px 0 2px;padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,#ffc93a,#ff9f1c);color:#05070d;
+    font:900 italic 22px 'Chakra Petch',sans-serif;text-transform:uppercase;letter-spacing:.04em;text-align:center;
+    box-shadow:0 0 26px rgba(255,201,58,.55);animation:multpulse 1.6s ease-in-out infinite}
+  .multbanner small{display:block;font:700 11px 'Orbitron',sans-serif;letter-spacing:.14em;font-style:normal;opacity:.8;margin-top:2px}
+  @keyframes multpulse{0%,100%{box-shadow:0 0 18px rgba(255,201,58,.45)}50%{box-shadow:0 0 34px rgba(255,201,58,.85)}}
+  #play.mult .prompt{border-left-color:#ffc93a;box-shadow:-10px 0 22px -14px #ffc93a}
+  @media (prefers-reduced-motion: reduce){.multbanner{animation:none}}
   .hardchip{background:rgba(255,56,96,.14);color:var(--red)}
 
   /* ---------- reveal + results ---------- */
@@ -410,6 +425,8 @@
     <div class="top"><span id="qnum">Prompt 1 of 7</span><span class="score-pill" id="running">0 pts</span></div>
     <div class="timer" id="timer"><i id="bar"></i></div>
     <div class="secs" id="secs">25</div>
+    <div class="steps" id="steps"></div>
+    <div class="multbanner hide" id="multBanner"></div>
     <div id="chip" style="margin-top:6px"></div>
     <div class="prompt" id="prompt"></div>
     <div class="sub" id="sub"></div>
@@ -798,7 +815,13 @@ function nextPrompt(){
   $("running").textContent = `${results.reduce((s,r)=>s+r.pts,0)} pts`;
   $("prompt").textContent = p.q;
   const m = multAt(round, idx);
-  $("chip").innerHTML = chipHTML(p) + (m > 1 ? `<span class="schip multchip">×${m} points</span>` : "");
+  $("chip").innerHTML = chipHTML(p);
+  const five = round.length === 5;
+  $("steps").classList.toggle("hide", !five);
+  if(five) $("steps").innerHTML = MULTS5.map((x, k) => `<span class="${x > 1 ? "x" : ""}${k === idx ? " on" : k < idx ? " done" : ""}">${x > 1 ? "×" + x : k + 1}</span>`).join("");
+  $("multBanner").classList.toggle("hide", m < 2);
+  $("multBanner").innerHTML = m === 2 ? `×2 · Double points<small>Every tier counts twice</small>` : m === 3 ? `×3 · Triple points<small>Final prompt · every tier counts three times</small>` : "";
+  $("play").classList.toggle("mult", m > 1);
   // fine print: what counts on line 1, any minimum on line 2, then the answer count
   const [scope, rule] = p.sub.split(" | ");
   $("sub").innerHTML = `${esc(scope)}` + (rule ? `<span class="rule">${esc(rule)}</span>` : "") + `<span class="count">${p.t.flat().length} valid answers</span>`;
@@ -867,7 +890,8 @@ function submit(raw){
   if(r.t === TIERS.length-1) html += `<div class="label" style="text-align:center">Nobody's touching that one.</div>`;
   $("rvDeeper").innerHTML = html;
 
-  $("nextBtn").textContent = idx === round.length-1 ? "See results" : "Next prompt";
+  const nm = multAt(round, idx + 1);
+  $("nextBtn").textContent = idx === round.length-1 ? "See results" : nm === 2 ? "Next: ×2 double points" : nm === 3 ? "Final: ×3 triple points" : "Next prompt";
   show("reveal");
   setTimeout(()=>$("nextBtn").focus(), 50);
 }
