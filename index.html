@@ -175,7 +175,8 @@
   .schip{font-family:'Orbitron',sans-serif;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;border-radius:5px;padding:6px 10px;background:rgba(2,4,9,.7);border:1px solid currentColor;box-shadow:0 0 12px -2px currentColor}
   .s-NFL{background:rgba(2,4,9,.7);color:var(--t2)} .s-NBA{background:rgba(2,4,9,.7);color:var(--t4)}
   .s-College{background:rgba(2,4,9,.7);color:var(--cyan)} .s-Crossover{background:rgba(2,4,9,.7);color:#a48bff}
-  .s-MLB{background:rgba(2,4,9,.7);color:#ff6b8b} .s-Olympics{background:rgba(2,4,9,.7);color:#e9eef5} .s-Golf{background:rgba(2,4,9,.7);color:var(--t3)}
+  .s-MLB{background:rgba(2,4,9,.7);color:#ff6b8b} .s-Olympics{background:rgba(2,4,9,.7);color:#e9eef5} .s-Golf{background:rgba(2,4,9,.7);color:var(--t3)} .s-Tennis{background:rgba(2,4,9,.7);color:#d7f36b}
+  .multchip{background:#ffc93a!important;color:#05070d!important;border-color:#ffc93a!important;font-weight:900}
   .hardchip{background:rgba(255,56,96,.14);color:var(--red)}
 
   /* ---------- reveal + results ---------- */
@@ -375,13 +376,14 @@
     <div id="acct"></div>
     
     <h1 class="logo"><b>Nice</b><br><span>Pull</span></h1>
-    <div class="label" style="text-align:center;font-size:12px;white-space:nowrap;margin-top:56px">🏈 🏀 🏟️ ⚾ ⛳ 🏅</div>
-    <p class="tag">Seven prompts. One answer each. The deeper the pull, the bigger the points.</p>
+    <div class="label" style="text-align:center;font-size:12px;white-space:nowrap;margin-top:56px">🏈 🏀 🏟️ ⚾ ⛳ 🏅 🎾</div>
+    <p class="tag">Five prompts. One answer each. The deeper the pull, the bigger the points. <b style="color:var(--gold,#ffc93a)">Prompt 4 counts double. Prompt 5 counts triple.</b></p>
     <div id="inviteCard"></div>
     <div class="card">
       <div class="label">How it works</div>
       <ul class="rules">
         <li>You get 25 seconds to name one player who fits the prompt.</li>
+        <li>The last two prompts are the tough ones: prompt 4 is worth <b>×2</b>, prompt 5 is worth <b>×3</b>. Max score 800.</li>
         <li>Any right answer counts, but famous names score less.</li>
         <li>Name someone who doesn't fit and it's <b>Not a Guy</b>: keep guessing until the clock runs out. No right answer in time: <b>Ur a Bum</b>, 0 points.</li>
         <li>Some prompts list a minimum in the fine print (snaps, minutes or games). Name a guy under it and it's <b>Too Deep</b>: guess again.</li>
@@ -393,7 +395,7 @@
     </div>
     <button class="btn" id="playBtn" disabled>Play today's game</button>
     <div style="display:flex;flex-direction:column;gap:6px" id="gameBtns"></div>
-    <p class="foot"><span id="poolNote">Loading players…</span><br>A new game every day: NFL, NBA, college football and crossovers, with a little baseball, golf and the Olympics.<br>Data: nflverse, Basketball Reference, ESPN via hoopR and cfbfastR, the Lahman Baseball Database, Olympedia, Wikipedia.<br><a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="mailto:support@nicepull.io" style="color:inherit">Contact</a></p>
+    <p class="foot"><span id="poolNote">Loading players…</span><br>A new game every day: NFL, college football, NBA, baseball and a mixed bag (crossovers, golf, tennis, the Olympics).<br>Data: nflverse, Basketball Reference, ESPN via hoopR and cfbfastR, the Lahman Baseball Database, Olympedia, Wikipedia.<br><a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a> · <a href="mailto:support@nicepull.io" style="color:inherit">Contact</a></p>
   </section>
 
   <!-- ARCHIVE -->
@@ -500,8 +502,13 @@ var TITLES = [
   { min: 140, name: "Kind of a Bum",            sub: "your fantasy team is on autodraft" },
   { min: 0,   name: "U Don't Know Ball",        sub: "at least you have hobbies" },
 ];
-function titleFor(total){ return TITLES.find(t => total >= t.min); }
-function rankFor(total){ return titleFor(total).name; }
+// Title cutoffs are set for a 700-point game and scale with the game's max (5-prompt games with ×2 and ×3 max out at 800).
+function titleFor(total, max){ const k = (max || 800) / 700; return TITLES.find(t => total >= Math.round(t.min * k)); }
+function rankFor(total, max){ return titleFor(total, max).name; }
+// 5-prompt games (from Game #3, Nov 28, 2026): prompt 4 counts double, prompt 5 triple. Older 7-prompt games count everything once.
+const MULTS5 = [1, 1, 1, 2, 3];
+const multAt = (g, i) => g && g.length === 5 ? MULTS5[i] : 1;
+const maxOf = g => g && g.length === 5 ? MULTS5.reduce((a, m) => a + m * 100, 0) : (g ? g.length * 100 : 800);
 const TIERS = [
   {name:"Chalk",                pts:10,  color:"var(--t0)", emoji:"🥱"},
   {name:"Box Score Guy",        pts:30,  color:"var(--t1)", emoji:"📋"},
@@ -676,6 +683,7 @@ const GAMES = Array.isArray(window.SCHED) && SCHED.length ? SCHED.map(g => g.map
 const TRACK_OFFSET = Math.floor(N_GAMES / 2) + 1;   // +1 when launch day was renumbered #2 -> #1: same library game each day
 const libGame = k => ((k - 1 + TRACK_OFFSET) % N_GAMES + N_GAMES) % N_GAMES;   // Nice Pull game #k -> index in GAMES
 const todayGame = () => Math.max(1, dayNum());
+const maxFor = n => maxOf(GAMES[libGame(+n)]);
 // Accounts arrive with sign-in (Supabase). Until then nobody is signed in and the bonus game stays locked.
 const isSignedIn = () => !!window.NP_USER;
 
@@ -736,7 +744,7 @@ function renderStart(){
   const tick = () => { const el = document.getElementById("nextIn"); if(el) el.textContent = untilTomorrow(); };
   if(rec){
     $("playBtn").textContent = `See today's results · #${t}`;
-    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">You played today's game: <b>${rec.total}</b> · ${esc(rankFor(rec.total))}<br>Next game in <b id="nextIn"></b></p>`;
+    $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">You played today's game: <b>${rec.total}</b> · ${esc(rankFor(rec.total, maxFor(t)))}<br>Next game in <b id="nextIn"></b></p>`;
   } else {
     $("playBtn").textContent = `Play today's game · #${t}`;
     $("gameBtns").innerHTML = `<p class="hint" style="font-size:14px;margin-top:14px">One game a day. One shot at it.</p>`;
@@ -777,7 +785,7 @@ $("playBtn").onclick = () => { const t = todayGame(); if(t === null) return; if(
 renderStart();
 $("poolNote").textContent = `${N_GAMES} games · ${BANK.length} prompts · ${NAMES.length.toLocaleString()} players across football, basketball, baseball, golf and the Olympics`;
 
-const SPORT = {NFL:"🏈 NFL", NBA:"🏀 NBA", College:"🏟️ College", Crossover:"🔀 Crossover", MLB:"⚾ MLB", Golf:"⛳ Golf", Olympics:"🏅 Olympics"};
+const SPORT = {NFL:"🏈 NFL", NBA:"🏀 NBA", College:"🏟️ College", Crossover:"🔀 Crossover", MLB:"⚾ MLB", Golf:"⛳ Golf", Olympics:"🏅 Olympics", Tennis:"🎾 Tennis"};
 function chipHTML(p){ return `<span class="schip s-${p.s}">${SPORT[p.s]}</span>` + (p.d === "hard" ? `<span class="schip hardchip">🔥 Tough one</span>` : ""); }
 function startGame(d, label){ round = d; gameLabel = label; idx = 0; results = []; nextPrompt(); }
 const cur = () => round[idx];
@@ -789,7 +797,8 @@ function nextPrompt(){
   $("qnum").textContent = `${gameLabel} · ${idx+1} of ${round.length}`;
   $("running").textContent = `${results.reduce((s,r)=>s+r.pts,0)} pts`;
   $("prompt").textContent = p.q;
-  $("chip").innerHTML = chipHTML(p);
+  const m = multAt(round, idx);
+  $("chip").innerHTML = chipHTML(p) + (m > 1 ? `<span class="schip multchip">×${m} points</span>` : "");
   // fine print: what counts on line 1, any minimum on line 2, then the answer count
   const [scope, rule] = p.sub.split(" | ");
   $("sub").innerHTML = `${esc(scope)}` + (rule ? `<span class="rule">${esc(rule)}</span>` : "") + `<span class="count">${p.t.flat().length} valid answers</span>`;
@@ -832,14 +841,14 @@ function submit(raw){
   locked = true;
   clearInterval(timerId);
   const bum = !raw && misses.length === 0;
-  const tier = r.t >= 0 ? TIERS[r.t] : BUM;
-  results.push({q:p.q, s:p.s, d:p.d, name:r.name, tier, t:r.t, pts:tier.pts, timeout:!raw, misses:misses.length, bum});
+  const tier = r.t >= 0 ? TIERS[r.t] : BUM, m = multAt(round, idx), pts = tier.pts * m;
+  results.push({q:p.q, s:p.s, d:p.d, name:r.name, tier, t:r.t, pts, m, timeout:!raw, misses:misses.length, bum});
 
   $("rvPrompt").innerHTML = chipHTML(p) + " " + esc(p.q);
   $("rvBadge").textContent = tier.name;
   $("rvBadge").style.background = tier.color; $("rvBadge").style.setProperty("--tc", tier.color);
   $("rvYou").innerHTML = !raw ? (bum ? "Time's up. No guess." : "Time's up") : esc(r.name) + (tagOf(r.i) ? `<span class="who">${esc(tagOf(r.i))}</span>` : "");
-  $("rvPts").textContent = "+" + tier.pts;
+  $("rvPts").textContent = "+" + pts + (m > 1 && tier.pts ? ` (${tier.pts} × ${m})` : "");
 
   let note = "";
   if(raw && r.t >= 0 && !["exact","alias"].includes(r.how)) note = `You typed "${raw.trim()}"`;
@@ -854,7 +863,7 @@ function submit(raw){
   let html = "";
   if(r.t < 0) html += `<div class="label">Chalk answers</div>` + p.t[0].slice(0,3).map(n=>`<span class="chip">${esc(NAMES[n][0])}</span>`).join("") + `<div style="height:14px"></div>`;
   if(deeper.length && r.t < TIERS.length-1) html += `<div class="label">${r.t<0?"Deeper pulls":"Even deeper"}</div>` +
-    deeper.map(([n,i,k])=>`<span class="chip" style="border:1px solid ${TIERS[i].color}">${esc(n)}${tagOf(k) ? `<small>${esc(tagOf(k))}</small>` : ""} · ${TIERS[i].pts}</span>`).join("");
+    deeper.map(([n,i,k])=>`<span class="chip" style="border:1px solid ${TIERS[i].color}">${esc(n)}${tagOf(k) ? `<small>${esc(tagOf(k))}</small>` : ""} · ${TIERS[i].pts * m}</span>`).join("");
   if(r.t === TIERS.length-1) html += `<div class="label" style="text-align:center">Nobody's touching that one.</div>`;
   $("rvDeeper").innerHTML = html;
 
@@ -866,21 +875,21 @@ $("nextBtn").onclick = () => { idx++; nextPrompt(); };
 
 function showResults(){
   const total = results.reduce((s,r)=>s+r.pts,0);
-  const max = results.length*100;
+  const max = maxFor(gameNo);
   $("total").textContent = `${total} / ${max}`;
-  $("rank").textContent = rankFor(total);
-  $("rankSub").textContent = titleFor(total).sub;
+  $("rank").textContent = rankFor(total, max);
+  $("rankSub").textContent = titleFor(total, max).sub;
   const grid = results.map(r=>r.tier.emoji).join("");
   $("grid").innerHTML = results.map((r,k) => `<i class="bulb${r.t < 0 ? " off" : ""}" style="--tc:${r.tier.color};animation-delay:${.15 + k*.12}s" title="${esc(r.tier.name)}"></i>`).join("");
   $("breakdown").innerHTML = `<div class="label" style="margin-bottom:6px">Your pulls</div>` + results.map(r=>
-    `<div class="rowres"><div><b>${SPORT[r.s].split(" ")[0]} ${esc(r.q)}</b><small>${r.timeout?"Time's up":esc(r.name)}${r.misses?` · ${r.misses} miss${r.misses>1?"es":""}`:""}</small></div><div class="r" style="color:${r.tier.color}">${r.tier.name}<br>${r.pts}</div></div>`).join("");
+    `<div class="rowres"><div><b>${SPORT[r.s].split(" ")[0]} ${esc(r.q)}${r.m > 1 ? ` <span class="schip multchip">×${r.m}</span>` : ""}</b><small>${r.timeout?"Time's up":esc(r.name)}${r.misses?` · ${r.misses} miss${r.misses>1?"es":""}`:""}</small></div><div class="r" style="color:${r.tier.color}">${r.tier.name}<br>${r.pts}</div></div>`).join("");
   const best = results.reduce((a,b)=> b.pts>a.pts?b:a, results[0]);
   const icons = results.map(r=>SPORT[r.s].split(" ")[0]).join("");
   // link sits mid-message: iMessage only builds a big preview card when a link ends (or is) the message
-  $("shareText").value = `Nice Pull · ${gameLabel}\nnicepull.io\n${grid}\n${total}/${max} · ${rankFor(total)}`;
+  $("shareText").value = `Nice Pull · ${gameLabel}\nnicepull.io\n${grid}\n${total}/${max} · ${rankFor(total, max)}`;
   $("shareText").classList.add("hide");
   $("shareBtn").textContent = "Copy results";
-  saveScore(gameNo, {total, grid, rank: rankFor(total), results: results.map(r => ({q:r.q, s:r.s, d:r.d, name:r.name, t:r.t, pts:r.pts, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
+  saveScore(gameNo, {total, grid, rank: rankFor(total, max), results: results.map(r => ({q:r.q, s:r.s, d:r.d, name:r.name, t:r.t, pts:r.pts, m:r.m || 1, timeout:r.timeout, misses:r.misses, bum:r.bum}))});
   const y = todayGame() - 1, showY = gameNo === todayGame() && y >= 0;
   $("yResBtn").classList.toggle("hide", !showY); $("yResMsg").classList.add("hide");
   $("boardsResBtn").textContent = "Scoreboard 🏆" + (isSignedIn() ? "" : " 🔒");
@@ -903,7 +912,7 @@ $("boardsResBtn").onclick = () => openBoards();
 
 // ---------- accounts: save games to the player's account ----------
 const sb = () => (typeof npSB !== "undefined" && npSB) ? npSB : null;
-const recToRow = (n, rec) => ({ user_id: window.NP_USER.id, game_no: +n, total: rec.total, rank: rankFor(rec.total),
+const recToRow = (n, rec) => ({ user_id: window.NP_USER.id, game_no: +n, total: rec.total, rank: rankFor(rec.total, maxFor(n)),
   results: rec.results || [], played_at: new Date(rec.at || Date.now()).toISOString() });
 async function cloudPush(n, rec){
   if(!isSignedIn() || !sb() || !rec || !rec.results) return;
@@ -915,12 +924,12 @@ async function cloudPush(n, rec){
 // scores, so returning players can be counted without identifying anyone. See /privacy.
 async function logFinish(n, rec){
   try {
-    if(!sb() || !rec || !Array.isArray(rec.results) || rec.results.length !== 7) return;
+    if(!sb() || !rec || !Array.isArray(rec.results) || ![5, 7].includes(rec.results.length)) return;
     const before = Object.entries(loadScores()).filter(([k, r]) => +k !== +n && r && r.at).map(([, r]) => r.at);
     const last = before.length ? Math.max(...before) : null;
     await sb().from("finishes").insert({
       game_no: +n, total: rec.total, rank: rec.rank, signed_in: isSignedIn(),
-      results: rec.results.map(r => ({ q: r.q, s: r.s, name: r.name || null, t: r.t, pts: r.pts, timeout: !!r.timeout, misses: r.misses || 0 })),
+      results: rec.results.map(r => ({ q: r.q, s: r.s, name: r.name || null, t: r.t, pts: r.pts, m: r.m || 1, timeout: !!r.timeout, misses: r.misses || 0 })),
       prior_games: before.length,
       days_since_last: last ? Math.max(0, Math.round((Date.now() - last) / 86400000)) : null
     });
@@ -971,17 +980,18 @@ window.cloudSync = cloudSync;
 
 // ---------- your stats ----------
 const BANDS = [
-  { min: 490, name: "Gigachad/The Schwab",      color: "#b5f1fb", ink: "#05121a" },
-  { min: 370, name: "Kind of a Beast",          color: "#5cd3ea", ink: "#05121a" },
-  { min: 250, name: "Sports Talk Radio Caller", color: "#1fa9c6", ink: "#fff" },
-  { min: 140, name: "Kind of a Bum",            color: "#1b7f97", ink: "#fff" },
+  { min: 560, name: "Gigachad/The Schwab",      color: "#b5f1fb", ink: "#05121a" },
+  { min: 423, name: "Kind of a Beast",          color: "#5cd3ea", ink: "#05121a" },
+  { min: 286, name: "Sports Talk Radio Caller", color: "#1fa9c6", ink: "#fff" },
+  { min: 160, name: "Kind of a Bum",            color: "#1b7f97", ink: "#fff" },
   { min: 0,   name: "U Don't Know Ball",        color: "#1c5566", ink: "#fff" },
 ];
-const bandOf = total => BANDS.find(b => total >= b.min);
+// Band cutoffs below are for an 800-point (5-prompt) game; older 7-prompt games scale to their 700 max.
+const bandOf = (total, n) => { const k = (n == null ? 800 : maxFor(n)) / 800; return BANDS.find(b => total >= Math.round(b.min * k)); };
 const DAYMS = 86400000;
 const gameDate = n => new Date(DAY0 + (Math.max(1, n) - 1) * DAYMS);   // UTC date of game #n (the bonus game shares launch day)
 const fmtDate = (d, opts) => d.toLocaleDateString(undefined, Object.assign({ timeZone: "UTC" }, opts || { month: "short", day: "numeric" }));
-const SPORT_NAME = { NFL: "NFL", NBA: "NBA", College: "College football", Crossover: "Crossover", MLB: "Baseball", Golf: "Golf", Olympics: "Olympics" };
+const SPORT_NAME = { NFL: "NFL", NBA: "NBA", College: "College football", Crossover: "Crossover", MLB: "Baseball", Golf: "Golf", Olympics: "Olympics", Tennis: "Tennis" };
 
 function demoScores(){
   const r = rng(7), out = {}, t = statsToday();
@@ -1007,7 +1017,8 @@ const statsSource = () => NP_DEMO ? demoScores() : loadScores();
 function computeStats(scores){
   const games = Object.keys(scores).map(Number).filter(n => n >= 1 && scores[n] && typeof scores[n].total === "number").sort((a, b) => a - b)
     .map(n => ({ n, ...scores[n], results: scores[n].results || [] }));
-  const answers = games.flatMap(g => g.results.map(r => ({ ...r, game: g.n })));
+  // per-answer stats use base tier points (a ×2/×3 prompt counts like any other answer here)
+  const answers = games.flatMap(g => g.results.map(r => ({ ...r, pts: r.m > 1 ? r.pts / r.m : r.pts, game: g.n })));
   const totals = games.map(g => g.total);
   const avg = totals.length ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
   const best = games.reduce((b, g) => !b || g.total > b.total ? g : b, null);
@@ -1094,7 +1105,7 @@ function calendarHTML(st){
   for(let d = 1; d <= days; d++){
     const ts = Date.UTC(calMonth.y, calMonth.m, d), n = Math.round((ts - DAY0) / DAYMS) + 1, g = n >= 1 ? byN[n] : undefined;   // the bonus game stays off the calendar
     const cls = (n === t ? " today" : "") + (n > t || n < 1 ? " fut" : "");
-    if(g){ const b = bandOf(g.total);
+    if(g){ const b = bandOf(g.total, n);
       h += `<button class="c${cls}" data-n="${n}" style="background:${b.color};color:${b.ink}" aria-label="${fmtDate(new Date(ts))}, game ${n}: ${g.total} points, ${esc(b.name)}">${d}<span class="sc">${g.total}</span></button>`;
     } else h += `<div class="c${cls}">${d}</div>`;
   }
@@ -1105,9 +1116,9 @@ function calendarHTML(st){
 function trendSVG(st){
   const G = st.games.slice(-30); if(!G.length) return "";
   const W = 340, H = 170, L = 30, R = 12, T = 10, B = 22, iw = W - L - R, ih = H - T - B;
-  const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - v / 700 * ih;
+  const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - Math.min(v, 800) / 800 * ih;
   let s = `<svg class="trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="Your total score for your last ${G.length} games">`;
-  for(const v of [0, ...BANDS.map(b => b.min).filter(Boolean).reverse(), 700]) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? "rgba(140,170,200,.14)" : "rgba(140,170,200,.4)"}" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="9.5" fill="#8b93a7" style="font-variant-numeric:tabular-nums">${v}</text>`;
+  for(const v of [0, ...BANDS.map(b => b.min).filter(Boolean).reverse(), 800]) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? "rgba(140,170,200,.14)" : "rgba(140,170,200,.4)"}" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="9.5" fill="#8b93a7" style="font-variant-numeric:tabular-nums">${v}</text>`;
   const avgY = y(st.avg);
   s += `<line x1="${L}" x2="${W - R}" y1="${avgY}" y2="${avgY}" stroke="#ff8fc6" stroke-width="1" opacity=".75"/>`;
   s += `<path d="${G.map((g, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(g.total).toFixed(1)).join(" ")}" fill="none" stroke="#12c4dc" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -1121,7 +1132,7 @@ function trendSVG(st){
 function wireTrend(st){
   const G = st.games.slice(-30), svg = document.querySelector("#statsBody .trend"); if(!svg || !G.length) return;
   const W = 340, L = 30, R = 12, T = 10, ih = 170 - T - 22, iw = W - L - R;
-  const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - v / 700 * ih;
+  const x = i => L + (G.length === 1 ? iw / 2 : i * iw / (G.length - 1)), y = v => T + ih - Math.min(v, 800) / 800 * ih;
   const hit = svg.querySelector("#trHit"), xl = svg.querySelector("#trX"), dot = svg.querySelector("#trD");
   let cur = G.length - 1;
   const show = i => {
@@ -1129,7 +1140,7 @@ function wireTrend(st){
     xl.setAttribute("x1", x(i)); xl.setAttribute("x2", x(i)); xl.setAttribute("visibility", "visible");
     dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(g.total)); dot.setAttribute("visibility", "visible");
     const r = svg.getBoundingClientRect(), k = r.width / W;
-    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `${labelFor(g.n)} · ${fmtDate(gameDate(g.n))} · ${rankFor(g.total)}`);
+    showTip(r.left + x(i) * k, r.top + y(g.total) * k, `${g.total} pts`, `${labelFor(g.n)} · ${fmtDate(gameDate(g.n))} · ${rankFor(g.total, maxFor(g.n))}`);
   };
   const off = () => { xl.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip(); };
   hit.addEventListener("pointermove", e => { const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / (r.width / W);
@@ -1176,11 +1187,11 @@ function renderStats(){
     `<div class="card"><div class="label">Points by sport</div><p class="hint" style="margin-top:6px;font-size:12px">Average points per answer</p>${barsHTML(sportRows, 100, r => r.v.toFixed(0))}</div>` +
     `<div class="card"><div class="label">Tips from your games</div><ul class="insights">${insightsFor(st).map(i => `<li>${i.html}</li>`).join("")}</ul></div>` +
     `<div class="card"><div class="label">Recent games</div><table class="gtable"><thead><tr><th>Game</th><th>Date</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>` +
-      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>${shortLabel(g.n)}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(rankFor(g.total))}</td></tr>`).join("") + `</tbody></table></div>`;
+      recent.map(g => `<tr class="click" data-n="${g.n}" tabindex="0"><td>${shortLabel(g.n)}</td><td>${fmtDate(gameDate(g.n))}</td><td class="r">${g.total}</td><td>${esc(rankFor(g.total, maxFor(g.n)))}</td></tr>`).join("") + `</tbody></table></div>`;
   // wire up
   const wireCal = () => {
     $("calWrap").querySelectorAll("button.c").forEach(b => { const n = +b.dataset.n, g = st.games.find(x => x.n === n);
-      tipOn(b, `${g.total} pts`, `${labelFor(n)} · ${fmtDate(gameDate(n))} · ${bandOf(g.total).name}`);
+      tipOn(b, `${g.total} pts`, `${labelFor(n)} · ${fmtDate(gameDate(n))} · ${bandOf(g.total, n).name}`);
       b.onclick = () => { hideTip(); if(!NP_DEMO) { if(showSaved(n)) return; } }; });
     $("calPrev").onclick = () => { calMonth.m--; if(calMonth.m < 0) { calMonth.m = 11; calMonth.y--; } $("calWrap").innerHTML = calendarHTML(st); wireCal(); };
     $("calNext").onclick = () => { calMonth.m++; if(calMonth.m > 11) { calMonth.m = 0; calMonth.y++; } $("calWrap").innerHTML = calendarHTML(st); wireCal(); };
@@ -1241,7 +1252,7 @@ function dayTable(rows, lg, n){
     if(!lg && r.pos > prev + 1 && prev >= 100) out += `<tr class="gap"><td colspan="4">⋯</td></tr>`;
     if(r.pos) prev = r.pos;
     out += `<tr class="${r.is_me ? "me" : ""}"><td class="pos">${r.pos || "–"}</td><td class="nm">${esc(r.username)}${r.is_me ? " <small>you</small>" : ""}</td>` +
-      `<td class="r">${r.total == null ? "—" : r.total}</td><td class="tt">${r.total == null ? "<small>Hasn't played</small>" : esc(rankFor(r.total))}</td></tr>`;
+      `<td class="r">${r.total == null ? "—" : r.total}</td><td class="tt">${r.total == null ? "<small>Hasn't played</small>" : esc(rankFor(r.total, maxFor(n)))}</td></tr>`;
   }
   return `<table class="gtable btable"><thead><tr><th>#</th><th>Player</th><th class="r">Score</th><th>Title</th></tr></thead><tbody>${out}</tbody></table>`;
 }
